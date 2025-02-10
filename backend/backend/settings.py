@@ -71,7 +71,12 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'backend.wsgi.application'
+AUTH_USER_MODEL = "_kibaru_api.CustomUser"
 
+AUTHENTICATION_BACKENDS = [
+    "_kibaru_api.authentication.CustomUserBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
