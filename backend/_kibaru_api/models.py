@@ -53,10 +53,10 @@ class CustomUser(AbstractBaseUser):
     REQUIRED_FIELDS = ["email"]
     
     def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
         if self.skills.count() > 5:
             raise ValueError("Skills cannot exceed 5")
-        
-        super().save(*args, **kwargs)
 
 class JobListing(models.Model):
     JOB_STATUS =[
