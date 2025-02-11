@@ -19,4 +19,21 @@ class RatingSerializer(serializers.ModelSerializer):
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = "__all__"
+        fields = ["id", "first_name", "last_name", "phone_number", "email", "role", "latitude", "longitude", "skills"]
+        extra_kwargs = {
+            "password": {"write_only": True}
+        }
+
+        def create(self, validated_data):
+            user = CustomUser.objects.create_user(**validated_data)
+            return user
+
+        def update(self, instance, validated_data):
+            password = validated_data.pop("password", None)
+            user = super().update(instance, validated_data)
+
+            if password:
+                user.set_password(password)
+                user.save()
+
+            return user
