@@ -10,7 +10,6 @@ from .models import CustomUser, Skills, Rating, JobListing, JobSteps
 from .serializers import CustomUserSerializer, SkillSerializer, JobListingSerializer, RatingSerializer
 
 # Create your views here.
-
 ##########
 ###############
 ####################
@@ -113,6 +112,9 @@ def get_jobs(request):
     serializer = JobListingSerializer(data=jobs, many=True)
     return Response({"jobs": serializer.data}, status=status.HTTP_200_OK)
 
+class JobView(APIView):
+    def get(request, pk):
+        job = get_object_or_404(JobListing, id=pk)
 
 
 ##########
@@ -160,7 +162,7 @@ def get_ratings(request):
         ratings = Rating.objects.filter(by__created_by=request.user)
         serializer = RatingSerializer(data=ratings, many=True)
 
-        return Response()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class RatingView(APIView):
     permission_classes = IsAuthenticated
