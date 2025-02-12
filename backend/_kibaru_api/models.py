@@ -75,6 +75,7 @@ class JobListing(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(CustomUser, related_name="job_by", on_delete=models.CASCADE)
     status = models.TextField()
+    skills = models.ManyToManyField(Skills)
     freelancer = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True)
 
 class JobSteps(models.Model):
