@@ -45,19 +45,15 @@ class CustomUser(AbstractBaseUser):
     role = models.TextField(choices=ROLE_CHOICES)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    skills = models.ManyToManyField(Skills)
+    skills = models.ManyToManyField(Skills, blank=True)
     image = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     objects = CustomUserManager()
     USERNAME_FIELD = "phone_number"
     REQUIRED_FIELDS = ["email"]
-    
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
 
-        if self.skills.count() > 5:
-            raise ValueError("Skills cannot exceed 5")
+
 
 class JobListing(models.Model):
     JOB_STATUS =[
@@ -73,6 +69,7 @@ class JobListing(models.Model):
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     due_date = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
     created_by = models.ForeignKey(CustomUser, related_name="job_by", on_delete=models.CASCADE)
     status = models.TextField()
     skills = models.ManyToManyField(Skills)

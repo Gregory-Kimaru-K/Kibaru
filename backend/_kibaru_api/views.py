@@ -20,6 +20,9 @@ from .serializers import CustomUserSerializer, SkillSerializer, JobListingSerial
 
 @api_view(["POST"])
 def create_user(request):
+    role = request.data.get("role")
+    if role == "SUPERUSER":
+        return Response({"error": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
     serializer = CustomUserSerializer(data=request.data)
     
     if serializer.is_valid():
@@ -30,10 +33,10 @@ def create_user(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserView(APIView):
-    permission_classes = IsAuthenticated
+    permission_classes = [IsAuthenticated]
     def put(self, request, pk):
         user = get_object_or_404(CustomUser, id=pk)
-        serializer = CustomUserSerializer(user, data=request.data)
+        serializer = CustomUserSerializer(user, data=request.data, partial=True)
 
         if serializer.is_valid():
             serializer.save()
@@ -172,7 +175,6 @@ class RatingView(APIView):
         serializer = RatingSerializer(data=rate)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
-
 
     def put(request, pk):
         rate = get_object_or_404(Rating, id=pk)

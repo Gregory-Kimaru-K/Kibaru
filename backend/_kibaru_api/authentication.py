@@ -10,9 +10,9 @@ class CustomUserBackend(ModelBackend):
             user = UserModel.objects.filter(Q(phone_number=phone_number) | Q(email=email))
 
         except UserModel.DoesNotExist:
-            return
+            return None
 
         if user.check_password(password) and self.user_can_authenticate(user):
             return user
 
-        return
+        return None

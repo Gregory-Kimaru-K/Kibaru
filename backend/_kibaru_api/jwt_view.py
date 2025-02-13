@@ -24,13 +24,13 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     
     def validate(self, attr):
         UserModel = get_user_model()
-        email_or_phone = attr.get("email") or attr.get('phone_number')
+        username = attr.get("username")
         password = attr.get("password")
 
-        if not email_or_phone or not password:
+        if not username or not password:
             raise serializers.ValidationError("Phone number or Email required")
         
-        user = UserModel.objects.filter(Q(phone_number = email_or_phone) | Q(email = email_or_phone)).first()
+        user = UserModel.objects.filter(Q(phone_number = username) | Q(email = username)).first()
 
         if user and user.check_password(password):
             attr["email"] = user.email
