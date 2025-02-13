@@ -1,5 +1,5 @@
 from django.urls import path
-from .jwt_view import MyTokenObtainPairView
+from _kibaru_api.jwt_view import MyTokenObtainPairView
 from rest_framework_simplejwt.views import TokenRefreshView
 from . import views
 

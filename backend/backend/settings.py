@@ -76,7 +76,8 @@ AUTH_USER_MODEL = "_kibaru_api.CustomUser"
 
 AUTHENTICATION_BACKENDS = [
     "_kibaru_api.authentication.CustomUserBackend",
-    "django.contrib.auth.backends.ModelBackend"
+
+    "django.contrib.auth.backends.ModelBackend",
 ]
 
 # Database

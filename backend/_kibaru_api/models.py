@@ -42,6 +42,7 @@ class CustomUser(AbstractBaseUser):
     email = models.CharField(max_length=30, unique=True)
     is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     role = models.TextField(choices=ROLE_CHOICES)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
@@ -50,8 +51,8 @@ class CustomUser(AbstractBaseUser):
     created_at = models.DateTimeField(auto_now_add=True)
 
     objects = CustomUserManager()
-    USERNAME_FIELD = "phone_number"
-    REQUIRED_FIELDS = ["email"]
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["phone_number"]
 
 
 
@@ -69,7 +70,6 @@ class JobListing(models.Model):
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     due_date = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
-    is_active = models.BooleanField(default=True)
     created_by = models.ForeignKey(CustomUser, related_name="job_by", on_delete=models.CASCADE)
     status = models.TextField()
     skills = models.ManyToManyField(Skills)

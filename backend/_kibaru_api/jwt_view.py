@@ -2,7 +2,6 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer # typ
 from rest_framework_simplejwt.views import TokenObtainPairView # type: ignore
 from django.contrib.auth import get_user_model
 from django.db.models import Q
-from rest_framework import serializers # type: ignore
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
@@ -17,26 +16,38 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         token["role"] = user.role
         token["latitude"] = user.latitude
         token["longitude"] = user.longitude
-        token["skills"] = user.skills
+        token["skills"] = [skill.name for skill in user.skills.all()]
 
 
         return token
     
-    def validate(self, attr):
-        UserModel = get_user_model()
-        username = attr.get("username")
-        password = attr.get("password")
 
-        if not username or not password:
-            raise serializers.ValidationError("Phone number or Email required")
+    def validate(self, attrs):
+        UserModel = get_user_model()
         
-        user = UserModel.objects.filter(Q(phone_number = username) | Q(email = username)).first()
+        phone_or_email = attrs.get("phone_number") or attrs.get("email")
+        password = attrs.get("password")
+
+        # Fix: Ensure both credentials are provided
+        if not phone_or_email or not password:
+            raise ValueError("Email or Phone Number and Password are required")
+        
+        # Fetch user based on phone number or email
+        user = UserModel.objects.filter(
+            Q(phone_number=phone_or_email) | Q(email=phone_or_email)
+        ).first()
 
         if user and user.check_password(password):
-            attr["email"] = user.email
-            return super().validate(attr)
-        
-        raise serializers.ValidationError("Invalid credentials")
-    
+            if not user.is_active:
+                raise ValueError("User is not active")
+            
+            # Fix: Store the correct identifier (email or phone)
+            attrs["email"] = user.email
+
+            return super().validate(attrs)
+
+        raise ValueError("Invalid credentials")
+
+
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
