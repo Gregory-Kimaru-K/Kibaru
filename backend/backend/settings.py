@@ -53,6 +53,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware'
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+            'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
 ROOT_URLCONF = 'backend.urls'
 
 TEMPLATES = [
@@ -75,7 +81,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 AUTH_USER_MODEL = "_kibaru_api.CustomUser"
 
 AUTHENTICATION_BACKENDS = [
-    "_kibaru_api.authentication.CustomUserBackend",
+    "_kibaru_api.authentication.CustomBackend",
 
     "django.contrib.auth.backends.ModelBackend",
 ]
@@ -131,12 +137,6 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-            'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
-}
 
 from datetime import timedelta
 

@@ -2,8 +2,11 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer # typ
 from rest_framework_simplejwt.views import TokenObtainPairView # type: ignore
 from django.contrib.auth import get_user_model
 from django.db.models import Q
+from rest_framework import serializers
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    username_field = "username"
+
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
@@ -25,12 +28,12 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         UserModel = get_user_model()
         
-        phone_or_email = attrs.get("phone_number") or attrs.get("email")
+        phone_or_email = attrs.get("username", None)
         password = attrs.get("password")
 
         # Fix: Ensure both credentials are provided
         if not phone_or_email or not password:
-            raise ValueError("Email or Phone Number and Password are required")
+            raise serializers.ValidationError({"detail": "Email or Phone Number and Password are required"})
         
         # Fetch user based on phone number or email
         user = UserModel.objects.filter(
@@ -39,14 +42,14 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         if user and user.check_password(password):
             if not user.is_active:
-                raise ValueError("User is not active")
+                raise serializers.ValidationError({"detail": "User is not active"})
             
             # Fix: Store the correct identifier (email or phone)
             attrs["email"] = user.email
 
             return super().validate(attrs)
 
-        raise ValueError("Invalid credentials")
+        raise serializers.ValidationError({"detail": "Invalid credentials"})
 
 
 class MyTokenObtainPairView(TokenObtainPairView):
