@@ -44,8 +44,8 @@ class CustomUser(AbstractBaseUser):
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     role = models.TextField(choices=ROLE_CHOICES)
-    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    latitude = models.TextField(null=True, blank=True)
+    longitude = models.TextField(null=True, blank=True)
     skills = models.ManyToManyField(Skills, blank=True)
     image = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -54,7 +54,11 @@ class CustomUser(AbstractBaseUser):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["phone_number"]
 
-
+    def has_module_perms(self, app_label):
+        return self.is_staff
+    
+    def has_perm(self, perm, obj=None):
+        return self.is_superuser
 
 class JobListing(models.Model):
     JOB_STATUS =[
@@ -66,12 +70,12 @@ class JobListing(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField()
     budget = models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True)
-    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    latitude = models.TextField()
+    longitude = models.TextField()
     due_date = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(CustomUser, related_name="job_by", on_delete=models.CASCADE)
-    status = models.TextField()
+    status = models.TextField(choices=JOB_STATUS, default='PENDING')
     skills = models.ManyToManyField(Skills)
     freelancer = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True)
 

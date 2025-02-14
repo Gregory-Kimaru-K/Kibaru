@@ -63,7 +63,7 @@ def skills_create(request):
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(["POST"])
+@api_view(["GET"])
 def get_skills(request):
     skills = Skills.objects.all()
     serializer = SkillSerializer(skills, many=True)
@@ -84,7 +84,7 @@ def create_jobs(request):
         return Response({"error", "Unauthorized user"}, status=status.HTTP_401_UNAUTHORIZED)
 
     data = request.data
-    data["created_by"] = request.user
+    data["created_by"] = request.user.id
 
     serializer = JobListingSerializer(data=data)
     if serializer.is_valid():

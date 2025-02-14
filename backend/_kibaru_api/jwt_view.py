@@ -5,8 +5,6 @@ from django.db.models import Q
 from rest_framework import serializers
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
-    username_field = "username"
-
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
@@ -28,13 +26,13 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         UserModel = get_user_model()
         
-        phone_or_email = attrs.get("username", None)
+        phone_or_email = attrs.get("email")
         password = attrs.get("password")
 
         # Fix: Ensure both credentials are provided
         if not phone_or_email or not password:
             raise serializers.ValidationError({"detail": "Email or Phone Number and Password are required"})
-        
+
         # Fetch user based on phone number or email
         user = UserModel.objects.filter(
             Q(phone_number=phone_or_email) | Q(email=phone_or_email)
