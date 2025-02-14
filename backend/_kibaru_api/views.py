@@ -99,7 +99,7 @@ def get_jobs(request):
     user = request.user
     if user.role not in ["FREELANCER", "SUPERUSER"]:
         return Response({"error": "Unauthorized user"}, status=status.HTTP_401_UNAUTHORIZED)
-    
+
     user_skills = user.skills.all()
 
     jobs = JobListing.objects.filter(skills__in = user_skills).distinct()
@@ -112,12 +112,14 @@ def get_jobs(request):
         )
 
     jobs = sorted(jobs, key=lambda job: job.due_date)
-    serializer = JobListingSerializer(data=jobs, many=True)
+    serializer = JobListingSerializer(jobs, many=True)
     return Response({"jobs": serializer.data}, status=status.HTTP_200_OK)
 
 class JobView(APIView):
     def get(request, pk):
-        job = get_object_or_404(JobListing, id=pk)
+        pass
+
+
 
 
 ##########

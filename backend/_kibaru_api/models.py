@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 
 # Create your models here.
 class CustomUserManager(BaseUserManager):
@@ -44,8 +45,8 @@ class CustomUser(AbstractBaseUser):
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     role = models.TextField(choices=ROLE_CHOICES)
-    latitude = models.TextField(null=True, blank=True)
-    longitude = models.TextField(null=True, blank=True)
+    latitude = models.DecimalField(max_digits=15, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=15, decimal_places=6, null=True, blank=True)
     skills = models.ManyToManyField(Skills, blank=True)
     image = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -70,14 +71,45 @@ class JobListing(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField()
     budget = models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True)
-    latitude = models.TextField()
-    longitude = models.TextField()
+    latitude = models.DecimalField(max_digits=15, decimal_places=6)
+    longitude = models.DecimalField(max_digits=15, decimal_places=6)
     due_date = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(CustomUser, related_name="job_by", on_delete=models.CASCADE)
     status = models.TextField(choices=JOB_STATUS, default='PENDING')
     skills = models.ManyToManyField(Skills)
     freelancer = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True)
+    
+    def accept_proposal(self, proposal):
+        self.freelancer = proposal.freelancer
+        self.status = "CONFIRMED"
+
+        self.save()
+
+class JobProposal(models.Model):
+    PROPOSAL_STATUS = [
+        ("PENDING", "Pending"),
+        ("REJECTED", "Rejected"),
+        ("ACCEPTED", "Accepted")
+    ]
+
+    freelancer = models.ForeignKey(CustomUser, related_name="propasals", on_delete=models.CASCADE)
+    job = models.ForeignKey(JobListing, related_name="proposals", on_delete=models.CASCADE)
+    description = models.TextField(null=True, blank=True)
+    proposed_budget = models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True)
+    status = models.TextField(choices=PROPOSAL_STATUS, default='PENDING')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if self.job.status == "CONFIRMED":
+            raise ValidationError("Job Closed")
+        
+        super().save(*args, **kwargs)
+
+    def accept(self):
+        self.status = "ACCEPTED"
+        self.job.accept_proposal(self)
+        self.save()
 
 class JobSteps(models.Model):
     job = models.ForeignKey(JobListing, related_name="job", on_delete=models.CASCADE)

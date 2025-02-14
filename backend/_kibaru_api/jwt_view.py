@@ -15,8 +15,8 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         token["phone_number"] = user.phone_number
         token["email"] = user.email
         token["role"] = user.role
-        token["latitude"] = user.latitude
-        token["longitude"] = user.longitude
+        token["latitude"] = str(user.latitude)
+        token["longitude"] = str(user.longitude)
         token["skills"] = [skill.name for skill in user.skills.all()]
 
 
