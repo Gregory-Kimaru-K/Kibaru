@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.core.exceptions import ValidationError
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -6,8 +7,8 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework_simplejwt.tokens import RefreshToken
 from geopy.distance import geodesic
-from .models import CustomUser, Skills, Rating, JobListing, JobSteps
-from .serializers import CustomUserSerializer, SkillSerializer, JobListingSerializer, RatingSerializer
+from .models import CustomUser, Skills, Rating, JobListing, JobSteps, JobProposal
+from .serializers import CustomUserSerializer, SkillSerializer, JobListingSerializer, RatingSerializer, JobProposalSerializer
 
 # Create your views here.
 ##########
@@ -102,7 +103,7 @@ def get_jobs(request):
 
     user_skills = user.skills.all()
 
-    jobs = JobListing.objects.filter(skills__in = user_skills).distinct()
+    jobs = JobListing.objects.filter(skills__in = user_skills, status="PENDING").distinct()
     has_location = user.latitude is not None and user.longitude is not None
 
     if has_location:
@@ -116,10 +117,57 @@ def get_jobs(request):
     return Response({"jobs": serializer.data}, status=status.HTTP_200_OK)
 
 class JobView(APIView):
-    def get(request, pk):
-        pass
+    permission_classes=[IsAuthenticated]
+    def get(self, request, pk):
+        job = get_object_or_404(JobListing, id=pk)
+        serializer = JobListingSerializer(job)
 
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def put(self, request, pk):
+        job = get_object_or_404(JobListing, id=pk)
+        serializer = JobListingSerializer(job, data=request.data, partial=True)
 
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request, pk):
+        job = get_object_or_404(JobListing, id=pk)
+        if request.user.id != job.created_by:
+            return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
+        job.delete()
+        return Response({"detail": "Deleted Successfully"})
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def send_proposal(request):
+    if request.user.role != 'FREELANCER':
+        return Response({"error": "Unauthorized user"}, status=status.HTTP_403_FORBIDDEN)
+    
+    serializer = JobProposalSerializer(data=request.data)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response({"detail": serializer.data}, status=status.HTTP_201_CREATED)
+    
+    return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def accept_proposal(request, pk):
+    proposal = get_object_or_404(JobProposal, id=pk)
+    if request.user.id == proposal.job.created_by:
+        return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        proposal.accept()
+        return Response({"detail": "Proposal accepted successful"}, status=status.HTTP_200_OK)
+    
+    except ValidationError as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 ##########

@@ -11,7 +11,7 @@ class JobListingSerializer(serializers.ModelSerializer):
         model = JobListing
         fields = "__all__"
 
-class JobProposalsSerializer(serializers.ModelSerializer):
+class JobProposalSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobProposal
         fields = "__all__"
