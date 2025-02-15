@@ -9,3 +9,7 @@ def validate_phone_number(request):
 @api_view(["POST"])
 def validate_email(request):
     pass
+
+@api_view(["POST"])
+def forgot_password(request):
+    pass
