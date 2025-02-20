@@ -1,11 +1,13 @@
 from django.urls import path
 from _kibaru_api.jwt_view import MyTokenObtainPairView
 from rest_framework_simplejwt.views import TokenRefreshView
-from . import views
+from . import views, validation_views
 
 urlpatterns = [
     path("tokens/", MyTokenObtainPairView.as_view(), name="token"),
     path("tokens/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("validate/email/", validation_views.validate_email, name="email_validation"),
+    path("validate/code/", validation_views.validate_code, name='code_validation'),
     path("user/new/", views.create_user, name="create_user"),
     path("user/<int:pk>/", views.UserView.as_view(), name="update"),
     path("skills/create_new/", views.skills_create, name="create_skills"),
