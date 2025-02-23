@@ -1,65 +1,39 @@
-import { View, Text } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import * as SecureStore from "expo-secure-store"
-import { Stack, useRouter } from 'expo-router'
-import AuthContext, { AuthProvider } from '@/Contexts/AuthContext'
-import { UserProvider } from '@/Contexts/UserContext'
-import WelcomeLoad from './index'
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { useFonts } from 'expo-font';
+import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
+import 'react-native-reanimated';
 
-const _layout = () => {
-    const [loading, setLoading] = useState(true)
-    const [tokens, setTokens] = useState(null)
-    const router = useRouter()
+import { useColorScheme } from '@/hooks/useColorScheme';
 
-    useEffect(() => {
-        async function checkTokens() {
-            const storedToken = await SecureStore.getItemAsync("AuthTokens");
+// Prevent the splash screen from auto-hiding before asset loading is complete.
+SplashScreen.preventAutoHideAsync();
 
-            await new Promise(resolve => setTimeout(resolve, 3000))
+export default function RootLayout() {
+  const colorScheme = useColorScheme();
+  const [loaded] = useFonts({
+    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+  });
 
-            if (storedToken){
-                setTokens(JSON.parse(storedToken));
-                console.log("LOGGED IN")
-                router.replace("/(tabs)/jobs/confirmedjobs")
-            }
-            else {
-                console.log("DONE")
-                router.replace("/(authtabs)")
-            }
-        }
-        checkTokens().finally(() => {
-            setLoading(false)
-        })
-    }, []);
-
-    useEffect(() => {
-        console.log("Loading finished:", loading);
-    }, [loading]);
-    
-
-    if (loading){
-        return(
-            <Stack>
-                <Stack.Screen name='index' options={{
-                    header: () => null
-                }} />
-            </Stack>
-        )
+  useEffect(() => {
+    if (loaded) {
+      SplashScreen.hideAsync();
     }
+  }, [loaded]);
 
-    return (
-        <Stack>
-            {tokens ? (
-                <Stack.Screen name='(tabs)' options={{
-                    header: () => null
-                }}/>
-            ):(
-                <Stack.Screen name='(authtabs)' options={{
-                    header: () => null
-                }} />
-            )}
-        </Stack>
-    )
+  if (!loaded) {
+    return null;
+  }
+
+  return (
+    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="+not-found" />
+      </Stack>
+      <StatusBar style="auto" />
+    </ThemeProvider>
+  );
 }
-
-export default _layout
