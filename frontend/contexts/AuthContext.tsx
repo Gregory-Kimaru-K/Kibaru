@@ -4,7 +4,7 @@ import backendURL from "@/constants/constants";
 // Create Context
 interface authContext{
     forgotPassword: (forgData: {email: string}) => void,
-    login: (loginData: {email: string, code: string}) => void,
+    login: (loginData: {email: string, password: string}) => void,
     confirmCode: (confirmData: {email: string, code: string}) => void,
     logout: () => void
 }
