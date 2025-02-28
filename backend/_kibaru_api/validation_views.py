@@ -5,6 +5,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.core.cache import cache
 from django.core.mail import send_mail
+from .models import CustomUser
+from django.shortcuts import get_object_or_404
+from django.db.models import Q
 
 
 @api_view(["POST"])
@@ -53,4 +56,11 @@ def validate_code(request):
 
 @api_view(["POST"])
 def forgot_password(request):
-    pass
+    email_or_phone = request.data.get("email")
+    user = get_object_or_404(CustomUser, Q(email=email_or_phone) | Q(phone_number=email_or_phone))
+
+    updated_data = request.data.copy()
+    updated_data["email"] = user.email
+    request._full_data = updated_data
+
+    return validate_email(request)

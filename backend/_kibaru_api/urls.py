@@ -7,6 +7,7 @@ urlpatterns = [
     path("tokens/", MyTokenObtainPairView.as_view(), name="token"),
     path("tokens/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("validate/email/", validation_views.validate_email, name="email_validation"),
+    path("validate/forgot/", validation_views.forgot_password, name="forgot_password"),
     path("validate/code/", validation_views.validate_code, name='code_validation'),
     path("user/new/", views.create_user, name="create_user"),
     path("user/<int:pk>/", views.UserView.as_view(), name="update"),
