@@ -1,39 +1,77 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import { View, Text } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import { Stack, useRouter } from 'expo-router'
+import * as SecureStore from "expo-secure-store"
+import {jwtDecode} from "jwt-decode"
 
-import { useColorScheme } from '@/hooks/useColorScheme';
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
-
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
-
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
-  if (!loaded) {
-    return null;
+interface JwtPayload {
+    role: string;
+    exp: number;
+    iat: number;
   }
 
-  return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
-  );
+
+const _layout = () => {
+    const [loading, setLoading] = useState(true)
+    const router = useRouter()
+
+    useEffect(() => {
+        async function Waiting() {
+            await new Promise(resolve => setTimeout(resolve, 5000))
+            
+            try{
+                const storedTokens = await SecureStore.getItemAsync("AuthTokens")
+                if (storedTokens){
+                    const parsedTokens = JSON.parse(storedTokens)
+                    const user = jwtDecode<JwtPayload>(parsedTokens.access)
+
+                    if (user.role === "FREELANCER"){
+                        router.replace("/(tabs)")
+                    }else {
+                        router.replace("/(emptabs)")
+                    }
+                }
+                else{
+                    console.log("No Stored Tokens")
+                    router.replace("/login/signup")
+                }
+            }
+            catch (error){
+                console.log(`NJR_LAYOUT_ERROR: ${error}`)
+            }
+            finally{
+                setLoading(false)
+            }
+        }
+        Waiting()
+    }, [])
+
+    if (loading) {
+        return (
+            <Stack>
+                <Stack.Screen name='index' options={{
+                    header: () => null
+                }} />
+            </Stack>
+        )
+    }
+
+    return(
+        <Stack>
+            <Stack.Screen
+                name='login/signup'
+                options={{
+                    header: () => null
+                }}
+            />
+            <Stack.Screen
+                name='login/login'
+                options={{
+                    header: () => null
+                }}
+            />
+        </Stack>
+    )
 }
+
+export default _layout
