@@ -4,6 +4,8 @@ import { Stack, useRouter } from 'expo-router'
 import * as SecureStore from "expo-secure-store"
 import {jwtDecode} from "jwt-decode"
 import { Ionicons } from '@expo/vector-icons';
+import SignIn from '@/components/SignIn'
+import SignUp from '@/components/Signup'
 
 interface JwtPayload {
     role: string;
@@ -16,15 +18,24 @@ const {width, height} = Dimensions.get("window")
 const _layout = () => {
     const [loading, setLoading] = useState(true)
     const [userExists, setUserExists] = useState(false)
-    const [showLogin, setShowLogin] = useState(false)
+    const [showLogin, setShowLogin] = useState<null | string>(null)
     const router = useRouter()
-
-    const loginFormPostion = useRef(new Animated.Value(height)).current;
     const logoHeight = useRef(new Animated.Value(height * 0.72)).current;
-    const backButtonOpacity = useRef(new Animated.Value(0)).current;
-    const labelPosition = useRef(new Animated.Value(14)).current;
-    const labelFontSize = useRef(new Animated.Value(14)).current;
-    const labelPositionLeft = useRef(new Animated.Value(8)).current;
+
+    if (showLogin !== null){
+        Animated.timing(logoHeight, {
+            toValue: height * 0.4,
+            duration: 500,
+            useNativeDriver: false
+        }).start()
+    } else {
+        Animated.timing(logoHeight, {
+            toValue: height * 0.72,
+            duration: 500,
+            useNativeDriver: false
+        }).start()
+    }
+
 
     const closeKeyboard = () => {
         Keyboard.dismiss()
@@ -63,91 +74,6 @@ const _layout = () => {
         Waiting()
     }, [])
 
-    const openLoginForm = () => {
-        setShowLogin(true)
-        
-        Animated.parallel([
-            Animated.timing(loginFormPostion, {
-                toValue: 0,
-                duration: 500,
-                useNativeDriver: false
-            }),
-            Animated.timing(logoHeight, {
-                toValue: height * 0.4,
-                duration: 500,
-                useNativeDriver: false
-            }),
-            Animated.timing(backButtonOpacity, {
-                toValue: 1,
-                duration: 200,
-                useNativeDriver: true
-            })
-        ]).start()
-    }
-
-    const closeLoginForm = () => {
-        setShowLogin(false)
-        closeKeyboard()
-        Animated.parallel([
-            Animated.timing(loginFormPostion, {
-                toValue: height,
-                duration: 500,
-                useNativeDriver: false
-            }),
-            Animated.timing(logoHeight, {
-                toValue: height * 0.72,
-                duration: 500,
-                useNativeDriver: false
-            }),
-            Animated.timing(backButtonOpacity, {
-                toValue: 0,
-                duration: 100,
-                useNativeDriver: true
-            })
-        ]).start()
-
-    }
-
-    const FocusedAnimation = () => {
-        Animated.parallel([
-            Animated.timing(labelPosition, {
-                toValue: 56,
-                duration: 200,
-                useNativeDriver: false
-            }),
-            Animated.timing(labelFontSize, {
-                toValue: 12,
-                duration: 200,
-                useNativeDriver: false
-            }),
-            Animated.timing(labelPositionLeft, {
-                toValue: 18,
-                duration: 200,
-                useNativeDriver: false
-            })
-        ]).start()
-    }
-
-    const BlurAnimation = () => {
-        Animated.parallel([
-            Animated.timing(labelPosition, {
-                toValue: 20,
-                duration: 200,
-                useNativeDriver: false
-            }),
-            Animated.timing(labelFontSize, {
-                toValue: 14,
-                duration: 200,
-                useNativeDriver: false
-            }),
-            Animated.timing(labelPositionLeft, {
-                toValue: 2,
-                duration: 200,
-                useNativeDriver: false
-            })
-        ]).start()
-    }
-
     return (
         <TouchableWithoutFeedback onPress={closeKeyboard}>
             <View style={styles.container}>
@@ -160,10 +86,10 @@ const _layout = () => {
                 :
                     (!userExists ?
                     <View style={styles.buttonsView}>
-                        <Pressable style={styles.btn2} onPress={openLoginForm}>
+                        <Pressable style={styles.btn2} onPress={() => setShowLogin("SIGNIN")}>
                             <Text style={{ color: "#ffffff", fontSize: 30 }}>Sign In</Text>
                         </Pressable>
-                        <Pressable style={styles.btn}>
+                        <Pressable style={styles.btn} onPress={() => setShowLogin("SIGNUP")}>
                             <Text style={{ color: "#001729", fontSize: 30 }}>Sign Up</Text>
                         </Pressable>
                     </View>
@@ -174,22 +100,8 @@ const _layout = () => {
                         </Stack>
                     )
                 }
-                <Animated.View style={[styles.signIn, {top: loginFormPostion}]}>
-                    <Animated.View style={{ opacity: backButtonOpacity }}>
-                        <Pressable onPress={closeLoginForm}>
-                            <Ionicons name="arrow-back" size={30} color="#ffffff" />
-                        </Pressable>
-                    </Animated.View>
-                    <View style={styles.signInForm}>
-                        <Text style={styles.signInFormHeader}>Welcome Back</Text>
-                        <View style={styles.ContInput}>
-                            <TextInput style={styles.textInput} onFocus={FocusedAnimation} onBlur={BlurAnimation} />
-                            <Animated.Text style={[styles.InputLabel, {left: labelPositionLeft, bottom: labelPosition, fontSize: labelFontSize}]}>
-                                Email or Phone Number
-                            </Animated.Text>
-                        </View>
-                    </View>
-                </Animated.View>
+                <SignIn show={showLogin} setShow={setShowLogin} />
+                <SignUp show={showLogin} setShow={setShowLogin} />
             </View>
         </TouchableWithoutFeedback>
     )
@@ -242,16 +154,16 @@ const styles = StyleSheet.create({
     signInForm: {
         top: height * 0.15,
         height: height * 0.85,
-        backgroundColor: "#002542",
+        backgroundColor: "#032139",
         borderTopLeftRadius: 56,
-        borderTopRightRadius: 56
+        borderTopRightRadius: 56,
     },
 
     signInFormHeader: {
         fontSize: 42,
         fontWeight: 600,
         textAlign: "center",
-        paddingBottom: 32,
+        paddingBottom: 56,
         color: "#ffffff"
     },
 
@@ -261,7 +173,8 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         width: '96%',
         height: 64,
-        alignSelf: "center"
+        alignSelf: "center",
+        marginBottom: 48,
     },
 
     textInput: {
@@ -269,6 +182,7 @@ const styles = StyleSheet.create({
         height: "100%",
         alignSelf: "center",
         fontSize: 24,
+        color: "#FFFFFF"
     },
 
     InputLabel: {
@@ -280,6 +194,33 @@ const styles = StyleSheet.create({
         paddingHorizontal: 4,
         fontSize: 12,
         fontWeight: 300
+    },
+    submitBtn: {
+        backgroundColor: "#FF550D",
+        width:"64%",
+        height: 56,
+        borderRadius: 20,
+        alignSelf: "center",
+        alignItems: "center",
+        justifyContent: "center"
+    },
+    submitBtnText: {
+        fontSize: 32,
+    },
+    footer: {
+        position: "absolute",
+        bottom: "25%",
+        width: "100%",
+        alignItems: "center",
+    },
+    footerText: {
+        fontSize: 18,
+        color: "#ffffff"
+    },
+    footerHighlights: {
+        color: "#FF550D",
+        fontSize: 22,
+        fontWeight: 600
     }
 })
 
