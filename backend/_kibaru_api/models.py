@@ -26,9 +26,13 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault("is_staff", True)
 
         return self.create_user(phone_number, email, password, **extra_fields)
+    
+class Industry(models.Model):
+    name=models.TextField()
 
 class Skills(models.Model):
     name=models.CharField(max_length=50)
+    industry = models.ForeignKey(Industry, on_delete=models.CASCADE)
 
 class CustomUser(AbstractBaseUser):
     ROLE_CHOICES = [
@@ -71,8 +75,8 @@ class JobListing(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField()
     budget = models.DecimalField(max_digits=16, decimal_places=2, blank=True, null=True)
-    latitude = models.DecimalField(max_digits=15, decimal_places=6)
-    longitude = models.DecimalField(max_digits=15, decimal_places=6)
+    latitude = models.DecimalField(max_digits=15, decimal_places=9)
+    longitude = models.DecimalField(max_digits=15, decimal_places=9)
     due_date = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(CustomUser, related_name="job_by", on_delete=models.CASCADE)
