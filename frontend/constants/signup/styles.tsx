@@ -7,15 +7,17 @@ export const styles = StyleSheet.create({
     signIn: {
         position: "absolute",
         width: "100%",
-        height: height
+        height: height,
+        flex: 1
     },
 
     signInForm: {
+        minHeight: height * 0.85,
         top: height * 0.15,
-        height: height * 0.85,
         backgroundColor: "#032139",
         borderTopLeftRadius: 56,
         borderTopRightRadius: 56,
+        paddingBottom: 20,
     },
 
     signInFormHeader: {
@@ -163,5 +165,13 @@ export const styles = StyleSheet.create({
     SkillName: {
         color: "#ffffff",
         fontSize: 18
+    },
+    submitLocation: {
+        position: "absolute",
+        bottom: "32%",
+        width:"100%",
+    },
+    SkillCont:{
+        width: "100%",
     }
 })

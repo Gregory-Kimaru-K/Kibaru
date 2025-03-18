@@ -75,7 +75,7 @@ const _layout = () => {
     }, [])
 
     return (
-        <TouchableWithoutFeedback onPress={closeKeyboard}>
+        <TouchableWithoutFeedback style={{ flex: 1 }} onPress={closeKeyboard}>
             <View style={styles.container}>
                 <StatusBar backgroundColor={"#001729"} />
                 <Animated.Image style={[styles.logo, {height: logoHeight}]} source={require("../assets/logos/Finallyrmbj.png")} />
@@ -109,9 +109,9 @@ const _layout = () => {
 
 const styles = StyleSheet.create({
     container: {
+        flex: 1,
         backgroundColor: "#001729",
         width: width,
-        height: height,
         justifyContent: "space-between"
     },
 
@@ -133,14 +133,14 @@ const styles = StyleSheet.create({
     btn: {
         backgroundColor: "#FF550D",
         width: "48%",
-        height: 56,
+        height: 48,
         alignItems:"center",
         justifyContent: "center",
         borderTopLeftRadius: 32,
     },
     btn2: {
         width: "48%",
-        height: 56,
+        height: 48,
         alignItems:"center",
         justifyContent: "center"
     },

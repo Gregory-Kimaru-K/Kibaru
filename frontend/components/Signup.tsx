@@ -1,10 +1,22 @@
-import { View, Text, Animated, Dimensions, Keyboard, Pressable, TextInput, StyleSheet, ScrollView } from 'react-native'
+import { View, Text, Animated, Dimensions, Keyboard, Pressable, TextInput, StyleSheet, ScrollView, FlatList } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { Ionicons } from '@expo/vector-icons';
 import { styles } from '@/constants/signup/styles';
 import { FocusedAnimation, BlurAnimation } from '@/constants/signup/animations';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import 'react-native-get-random-values';
 
 const {height} = Dimensions.get("window")
+const skills = [
+    { id: "1", category: "Construction & Engineering", subSkills: ["Plumbing", "Painting"] },
+    { id: "2", category: "Electrical & Maintenance", subSkills: ["Wiring", "AC Repair"] },
+    { id: "3", category: "Carpentry", subSkills: ["Furniture Making", "Wood Polishing"] },
+    { id: "4", category: "Welding", subSkills: ["Metal Cutting", "Arc Welding"] },
+    { id: "5", category: "Construction & Engineering", subSkills: ["Plumbing", "Painting"] },
+    { id: "6", category: "Electrical & Maintenance", subSkills: ["Wiring", "AC Repair"] },
+    { id: "7", category: "Carpentry", subSkills: ["Furniture Making", "Wood Polishing"] },
+    { id: "8", category: "Welding", subSkills: ["Metal Cutting", "Arc Welding"] },
+  ];
 
 const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string | null) => void}) => {
     const [role, setRole] = useState<null | string>(null)
@@ -285,7 +297,7 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
                                 Password
                             </Animated.Text>
                             <Pressable style={styles.eye} onPress={() => setpasswordVisibility(!passwordVisibility)}>
-                                <Ionicons name="eye-off-outline" size={24} color="rgba(255, 255, 255, 0.4)" />
+                                {passwordVisibility ? <Ionicons name="eye-off-outline" size={24} color="rgba(255, 255, 255, 0.4)" /> : <Ionicons name="eye-outline" size={24} color="rgba(255, 255, 255, 0.4)" />}
                             </Pressable>
                         </View>
                         <View style={styles.ContInput}>
@@ -294,7 +306,7 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
                                 Confirm Password
                             </Animated.Text>
                             <Pressable style={styles.eye} onPress={() => setConfirmPasswordVisibility(!confirmPasswordVisibility)}>
-                                <Ionicons name="eye-off-outline" size={24} color="rgba(255, 255, 255, 0.4)" />
+                                {confirmPasswordVisibility ? <Ionicons name="eye-off-outline" size={24} color="rgba(255, 255, 255, 0.4)" /> : <Ionicons name="eye-outline" size={24} color="rgba(255, 255, 255, 0.4)" />}
                             </Pressable>
                         </View>
                         <Pressable onPress={() => handlePasswordConfirm()}>
@@ -312,21 +324,79 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
             )}
 
             {step === 4 && (
-                <Animated.View style={[styles.signIn, {top: loginFormPostion}]}>
-                    <Animated.View style={{ opacity: backButtonOpacity }}>
+                <View style={styles.signIn}>
+                    <View>
                         <Pressable onPress={() => setStep(3)}>
                             <Ionicons name="arrow-back" size={30} color="#ffffff" />
                         </Pressable>
-                    </Animated.View>
+                    </View>
                     <View style={styles.signInForm}>
                         <Text style={styles.signInFormHeader}>Current Location</Text>
-                        <View style={styles.ContInput}>
-                            <TextInput style={styles.textInput} onFocus={() => FocusedAnimation(emailAnimations)} onBlur={() => BlurAnimation(emailAnimations)} />
-                            <Animated.Text style={[styles.InputLabel, {left: emailAnimations.labelPositionLeft, bottom: emailAnimations.labelPositionBottom, fontSize: emailAnimations.labelFontSize}]}>
-                                Enter Location
-                            </Animated.Text>
-                        </View>
-                        <Pressable onPress={() => handleNextStep(5)}>
+                        <GooglePlacesAutocomplete
+                            placeholder="Location"
+                            minLength={2} // Minimum number of characters to start search
+                            fetchDetails={true} // Important to get `details`
+                            onPress={(data, details = null) => {
+                                console.log("Data:", data);
+                                console.log("Details:", details);
+                            }}
+                            query={{
+                                key: "AIzaSyAgf8Rk4UX_On71_nasBjil_YPEjz95WTo",
+                                language: "en", // Language for results
+                                types: "geocode", // Limits results to cities, change as needed
+                                components: "country:KE",
+                            }}
+                            nearbyPlacesAPI="GooglePlacesSearch"
+                            debounce={200}
+                            enablePoweredByContainer={false}
+                            textInputProps={{
+                                placeholderTextColor: "rgba(255,255,255, 0.4)",
+                            }}
+                            styles={{
+                                textInputContainer: {
+                                    width: "96%",
+                                    height: 64,
+                                    alignSelf: "center",
+                                    borderWidth: 1,
+                                    borderColor: "#ffffff",
+                                    borderRadius: 8,
+                                    alignItems:"center",
+                                    justifyContent:"center",
+                                },
+                                textInput: {
+                                    width: "100%",
+                                    height: "100%",
+                                    marginLeft: 0,
+                                    marginRight: 0,
+                                    color: "#ffffff",
+                                    backgroundColor: 'transparent',
+                                    fontSize: 16,
+                                },
+                                predefinedPlacesDescription: {
+                                    color: "blue",
+                                },
+                                listView: {
+                                    maxHeight: "32%",
+                                    borderRadius: 8,
+                                    marginTop: 5,
+                                },
+                                row: {
+                                    backgroundColor: "#333333", // Background for each row
+                                    padding: 10,
+                                    borderBottomWidth: 1,
+                                    borderBottomColor: "#444444",
+                                },
+                                description: {
+                                    color: "#ffffff", // Text color for suggestions
+                                    fontSize: 14,
+                                },
+                                separator: {
+                                    height: 1,
+                                    backgroundColor: "#444444",
+                                },
+                            }}
+                        />
+                        <Pressable style={styles.submitLocation} onPress={() => handleNextStep(5)}>
                             <Animated.View style={[styles.submitBtn, {backgroundColor: submitedButtonColors}]}>
                                 <Text style={styles.submitBtnText}>
                                     Save
@@ -337,43 +407,7 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
                             <Text style={styles.footerText}>Have an account?  <Text style={styles.footerHighlights}onPress={toggleLoginForms}>Signin</Text></Text>
                         </View>
                     </View>
-                </Animated.View>
-            )}
-
-            {step === 5 && (
-                <Animated.View style={[styles.signIn, {top: loginFormPostion}]}>
-                    <Animated.View style={{ opacity: backButtonOpacity }}>
-                        <Pressable onPress={() => setStep(4)}>
-                            <Ionicons name="arrow-back" size={30} color="#ffffff" />
-                        </Pressable>
-                    </Animated.View>
-                    <View style={styles.signInForm}>
-                        <Text style={styles.signInFormHeader}>Choose Skills:</Text>
-                        <View>
-                            <Text style={styles.Skill}>Construction & Engineering</Text>
-                            <View style={styles.SubSkills}>
-                                <View style={styles.SubSkill}>
-                                    <View style={styles.CheckBox}></View>
-                                    <Text style={styles.SkillName}>Plumbing</Text>
-                                </View>
-                                <View style={styles.SubSkill}>
-                                    <View style={styles.CheckBox}></View>
-                                    <Text style={styles.SkillName}>Painting</Text>
-                                </View>
-                            </View>
-                        </View>
-                        <Pressable onPress={() => handleNextStep(4)}>
-                            <Animated.View style={[styles.submitBtn, {backgroundColor: submitedButtonColors}]}>
-                                <Text style={styles.submitBtnText}>
-                                    Save Skills
-                                </Text>
-                            </Animated.View>
-                        </Pressable>
-                        <View style={styles.footer}>
-                            <Text style={styles.footerText}>Have an account?  <Text style={styles.footerHighlights}onPress={toggleLoginForms}>Signin</Text></Text>
-                        </View>
-                    </View>
-                </Animated.View>
+                </View>
             )}
         </>
     )
