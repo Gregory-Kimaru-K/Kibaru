@@ -133,5 +133,35 @@ export const styles = StyleSheet.create({
         position: "absolute",
         right: 8,
         top: "30%"
+    },
+    Skill: {
+        fontSize: 24,
+        color: "#ffffff",
+        fontWeight: 500
+    },
+    SubSkills: {
+        flexDirection: "row",
+        justifyContent: "space-around",
+        marginVertical: 24,
+        flexWrap: "wrap"
+    },
+    SubSkill: {
+        flexDirection: "row",
+        gap: 4,
+        alignItems: "center",
+        justifyContent: "center",
+        marginVertical: 8,
+        marginHorizontal: 4
+    },
+    CheckBox: {
+        width: 16,
+        height: 16,
+        borderRadius: 4,
+        borderWidth: 1,
+        borderColor: '#ffffff',
+    },
+    SkillName: {
+        color: "#ffffff",
+        fontSize: 18
     }
 })

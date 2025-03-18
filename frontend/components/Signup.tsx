@@ -1,5 +1,5 @@
-import { View, Text, Animated, Dimensions, Keyboard, Pressable, TextInput, StyleSheet } from 'react-native'
-import React, { useRef, useState } from 'react'
+import { View, Text, Animated, Dimensions, Keyboard, Pressable, TextInput, StyleSheet, ScrollView } from 'react-native'
+import React, { useEffect, useRef, useState } from 'react'
 import { Ionicons } from '@expo/vector-icons';
 import { styles } from '@/constants/signup/styles';
 import { FocusedAnimation, BlurAnimation } from '@/constants/signup/animations';
@@ -8,7 +8,18 @@ const {height} = Dimensions.get("window")
 
 const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string | null) => void}) => {
     const [role, setRole] = useState<null | string>(null)
+    const [signupData, setSignupData] = useState<Record<string, string>>({})
+    const [code, setCode] = useState<null | string>(null)
     const [step, setStep] = useState<number>(1)
+    const [password, setPassword] = useState<null | string>(null)
+    const [confirm, setConfirm] = useState<null | string>(null)
+    const [passwordVisibility, setpasswordVisibility] = useState(true)
+    const [confirmPasswordVisibility, setConfirmPasswordVisibility] = useState(true)
+
+
+    useEffect(() => {
+        console.log(code)
+    }, [code])
 
     const createAnimatedValues = () => ({
         labelPositionBottom: new Animated.Value(12),
@@ -153,6 +164,18 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
         setStep(step)
     }
 
+    const handleSignupData = (name: string, value: string) => {
+        setSignupData((prev) => ({...prev, [name]: value}))
+        console.log(signupData)
+    }
+
+    const handlePasswordConfirm = () => {
+        ButtonAnimation()
+        if (password === confirm && (password !== null || password !== "")) {
+            setStep(4)
+        }
+    }
+
     return (
         <>
             {step === 1 && (
@@ -166,26 +189,26 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
                         <Text style={styles.signInFormHeader}>Create Account</Text>
                         <View style={styles.NameInputs}>
                             <View style={styles.NameInput}>
-                                <TextInput style={styles.textInput} onFocus={() => FocusedAnimation(fnameAnimations)} onBlur={() => BlurAnimation(fnameAnimations)} />
+                                <TextInput style={styles.textInput} onFocus={() => FocusedAnimation(fnameAnimations)} onBlur={() => !signupData.first_name && BlurAnimation(fnameAnimations)} onChangeText={(text) => handleSignupData("first_name", text)} />
                                 <Animated.Text style={[styles.InputLabel, {left: fnameAnimations.labelPositionLeft, bottom: fnameAnimations.labelPositionBottom, fontSize: fnameAnimations.labelFontSize}]}>
                                     First Name
                                 </Animated.Text>
                             </View>
                             <View style={styles.NameInput}>
-                                <TextInput style={styles.textInput} onFocus={() => FocusedAnimation(lnameAnimations)} onBlur={() => BlurAnimation(lnameAnimations)} />
+                                <TextInput style={styles.textInput} onFocus={() => FocusedAnimation(lnameAnimations)} onBlur={() => !signupData.last_name && BlurAnimation(lnameAnimations)} onChangeText={(text) => handleSignupData("last_name", text)} />
                                 <Animated.Text style={[styles.InputLabel, {left: lnameAnimations.labelPositionLeft, bottom: lnameAnimations.labelPositionBottom, fontSize: lnameAnimations.labelFontSize}]}>
                                     Last Name
                                 </Animated.Text>
                             </View>
                         </View>
                         <View style={styles.ContInput}>
-                            <TextInput style={styles.textInput} onFocus={() => FocusedAnimation(emailAnimations)} onBlur={() => BlurAnimation(emailAnimations)} />
+                            <TextInput style={styles.textInput} onFocus={() => FocusedAnimation(emailAnimations)} onBlur={() => !signupData.email  && BlurAnimation(emailAnimations)} onChangeText={(text) => handleSignupData("email", text)}keyboardType='email-address' />
                             <Animated.Text style={[styles.InputLabel, {left: emailAnimations.labelPositionLeft, bottom: emailAnimations.labelPositionBottom, fontSize: emailAnimations.labelFontSize}]}>
                                 Email
                             </Animated.Text>
                         </View>
                         <View style={styles.ContInput}>
-                            <TextInput style={styles.textInput} onFocus={() => FocusedAnimation(phoneAnimations)} onBlur={() => BlurAnimation(phoneAnimations)} />
+                            <TextInput style={styles.textInput} onFocus={() => FocusedAnimation(phoneAnimations)} onBlur={() =>  !signupData.phone_number && BlurAnimation(phoneAnimations)} onChangeText={(text) => handleSignupData("phone_number", text)} keyboardType='phone-pad' />
                             <Animated.Text style={[styles.InputLabel, {left: phoneAnimations.labelPositionLeft, bottom: phoneAnimations.labelPositionBottom, fontSize: phoneAnimations.labelFontSize}]}>
                                 Phone Number
                             </Animated.Text>
@@ -228,7 +251,7 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
                     <Text style={styles.signInFormHeader}>Confirm Email</Text>
                     <Text style={styles.checkMail}>Check <Text style={styles.Mail}>Email</Text></Text>
                     <View style={styles.ContInput}>
-                        <TextInput style={styles.textInput} onFocus={() => FocusedAnimation(codeAnimations)} onBlur={() => BlurAnimation(codeAnimations)} />
+                        <TextInput style={styles.textInput} onFocus={() => FocusedAnimation(codeAnimations)} onBlur={() => (code === null || code === "") && BlurAnimation(codeAnimations)} onChangeText={(text) => setCode(text)} keyboardType='numeric' />
                         <Animated.Text style={[styles.InputLabel, {left: codeAnimations.labelPositionLeft, bottom: codeAnimations.labelPositionBottom, fontSize: codeAnimations.labelFontSize}]}>
                             Enter Code
                         </Animated.Text>
@@ -257,24 +280,24 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
                     <View style={styles.signInForm}>
                         <Text style={styles.signInFormHeader}>Create Password</Text>
                         <View style={styles.ContInput}>
-                            <TextInput style={styles.textInput} onFocus={() => FocusedAnimation(passwordAnimations)} onBlur={() => BlurAnimation(passwordAnimations)} />
+                            <TextInput style={styles.textInput} secureTextEntry={passwordVisibility} onFocus={() => FocusedAnimation(passwordAnimations)} onBlur={() => (password === null || password === "") && BlurAnimation(passwordAnimations)} onChangeText={(text) => setPassword(text)} />
                             <Animated.Text style={[styles.InputLabel, {left: passwordAnimations.labelPositionLeft, bottom: passwordAnimations.labelPositionBottom, fontSize: passwordAnimations.labelFontSize}]}>
                                 Password
                             </Animated.Text>
-                            <Pressable style={styles.eye}>
+                            <Pressable style={styles.eye} onPress={() => setpasswordVisibility(!passwordVisibility)}>
                                 <Ionicons name="eye-off-outline" size={24} color="rgba(255, 255, 255, 0.4)" />
                             </Pressable>
                         </View>
                         <View style={styles.ContInput}>
-                            <TextInput style={styles.textInput} onFocus={() => FocusedAnimation(cpasswordAnimations)} onBlur={() => BlurAnimation(cpasswordAnimations)} />
+                            <TextInput style={styles.textInput} secureTextEntry={confirmPasswordVisibility} onFocus={() => FocusedAnimation(cpasswordAnimations)} onBlur={() => (confirm === null || confirm === "") && BlurAnimation(cpasswordAnimations)} onChangeText={(text) => setConfirm(text)} />
                             <Animated.Text style={[styles.InputLabel, {left: cpasswordAnimations.labelPositionLeft, bottom: cpasswordAnimations.labelPositionBottom, fontSize: cpasswordAnimations.labelFontSize}]}>
                                 Confirm Password
                             </Animated.Text>
-                            <Pressable style={styles.eye}>
+                            <Pressable style={styles.eye} onPress={() => setConfirmPasswordVisibility(!confirmPasswordVisibility)}>
                                 <Ionicons name="eye-off-outline" size={24} color="rgba(255, 255, 255, 0.4)" />
                             </Pressable>
                         </View>
-                        <Pressable onPress={() => handleNextStep(4)}>
+                        <Pressable onPress={() => handlePasswordConfirm()}>
                             <Animated.View style={[styles.submitBtn, {backgroundColor: submitedButtonColors}]}>
                                 <Text style={styles.submitBtnText}>
                                     Next
@@ -297,17 +320,52 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
                     </Animated.View>
                     <View style={styles.signInForm}>
                         <Text style={styles.signInFormHeader}>Current Location</Text>
-                        <Text style={styles.checkMail}>Check <Text style={styles.Mail}>Email</Text></Text>
                         <View style={styles.ContInput}>
                             <TextInput style={styles.textInput} onFocus={() => FocusedAnimation(emailAnimations)} onBlur={() => BlurAnimation(emailAnimations)} />
                             <Animated.Text style={[styles.InputLabel, {left: emailAnimations.labelPositionLeft, bottom: emailAnimations.labelPositionBottom, fontSize: emailAnimations.labelFontSize}]}>
-                                Enter 4
+                                Enter Location
                             </Animated.Text>
+                        </View>
+                        <Pressable onPress={() => handleNextStep(5)}>
+                            <Animated.View style={[styles.submitBtn, {backgroundColor: submitedButtonColors}]}>
+                                <Text style={styles.submitBtnText}>
+                                    Save
+                                </Text>
+                            </Animated.View>
+                        </Pressable>
+                        <View style={styles.footer}>
+                            <Text style={styles.footerText}>Have an account?  <Text style={styles.footerHighlights}onPress={toggleLoginForms}>Signin</Text></Text>
+                        </View>
+                    </View>
+                </Animated.View>
+            )}
+
+            {step === 5 && (
+                <Animated.View style={[styles.signIn, {top: loginFormPostion}]}>
+                    <Animated.View style={{ opacity: backButtonOpacity }}>
+                        <Pressable onPress={() => setStep(4)}>
+                            <Ionicons name="arrow-back" size={30} color="#ffffff" />
+                        </Pressable>
+                    </Animated.View>
+                    <View style={styles.signInForm}>
+                        <Text style={styles.signInFormHeader}>Choose Skills:</Text>
+                        <View>
+                            <Text style={styles.Skill}>Construction & Engineering</Text>
+                            <View style={styles.SubSkills}>
+                                <View style={styles.SubSkill}>
+                                    <View style={styles.CheckBox}></View>
+                                    <Text style={styles.SkillName}>Plumbing</Text>
+                                </View>
+                                <View style={styles.SubSkill}>
+                                    <View style={styles.CheckBox}></View>
+                                    <Text style={styles.SkillName}>Painting</Text>
+                                </View>
+                            </View>
                         </View>
                         <Pressable onPress={() => handleNextStep(4)}>
                             <Animated.View style={[styles.submitBtn, {backgroundColor: submitedButtonColors}]}>
                                 <Text style={styles.submitBtnText}>
-                                    Confirm Code
+                                    Save Skills
                                 </Text>
                             </Animated.View>
                         </Pressable>
