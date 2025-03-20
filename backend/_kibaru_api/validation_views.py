@@ -43,7 +43,7 @@ def validate_code(request):
     code = request.data.get('code')
 
     if not email or not code:
-        return Response({'detail': "Please enter the code"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': "Please enter the code"}, status=status.HTTP_400_BAD_REQUEST)
     
     stored_code = cache.get(email)
 
@@ -52,7 +52,7 @@ def validate_code(request):
         return Response({"detail": "Successfully verified"}, status=status.HTTP_200_OK)
     
     else:
-        return Response({"detail": "Invalid code"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "Invalid code"}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(["POST"])
 def forgot_password(request):
