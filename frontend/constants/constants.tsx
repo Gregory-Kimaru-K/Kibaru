@@ -1,5 +1,3 @@
-import { Animated } from "react-native"
-
-const backendURL = "http://127.0.0.1:8000/api/"
+const backendURL = "http://192.168.0.102:8000/api"
 
 export default backendURL

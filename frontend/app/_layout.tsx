@@ -3,9 +3,10 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Stack, useRouter } from 'expo-router'
 import * as SecureStore from "expo-secure-store"
 import {jwtDecode} from "jwt-decode"
-import { Ionicons } from '@expo/vector-icons';
 import SignIn from '@/components/SignIn'
 import SignUp from '@/components/Signup'
+import { UserProvider } from '@/contexts/UserContext'
+import { AuthProvider } from '@/contexts/AuthContext'
 
 interface JwtPayload {
     role: string;
@@ -75,35 +76,39 @@ const _layout = () => {
     }, [])
 
     return (
-        <TouchableWithoutFeedback style={{ flex: 1 }} onPress={closeKeyboard}>
-            <View style={styles.container}>
-                <StatusBar backgroundColor={"#001729"} />
-                <Animated.Image style={[styles.logo, {height: logoHeight}]} source={require("../assets/logos/Finallyrmbj.png")} />
-                {loading ?
-                    <View style={styles.activityInd}>
-                        <ActivityIndicator color={"#FF550D"} size={40} />
+        <AuthProvider>
+            <UserProvider>
+                <TouchableWithoutFeedback style={{ flex: 1 }} onPress={closeKeyboard}>
+                    <View style={styles.container}>
+                        <StatusBar backgroundColor={"#001729"} />
+                        <Animated.Image style={[styles.logo, {height: logoHeight}]} source={require("../assets/logos/Finallyrmbj.png")} />
+                        {loading ?
+                            <View style={styles.activityInd}>
+                                <ActivityIndicator color={"#FF550D"} size={40} />
+                            </View>
+                        :
+                            (!userExists ?
+                            <View style={styles.buttonsView}>
+                                <Pressable style={styles.btn2} onPress={() => setShowLogin("SIGNIN")}>
+                                    <Text style={{ color: "#ffffff", fontSize: 30 }}>Sign In</Text>
+                                </Pressable>
+                                <Pressable style={styles.btn} onPress={() => setShowLogin("SIGNUP")}>
+                                    <Text style={{ color: "#001729", fontSize: 30 }}>Sign Up</Text>
+                                </Pressable>
+                            </View>
+                            :
+                                <Stack>
+                                    <Stack.Screen name='(tabs)' />
+                                    <Stack.Screen name='(emptabs)' />
+                                </Stack>
+                            )
+                        }
+                        <SignIn show={showLogin} setShow={setShowLogin} />
+                        <SignUp show={showLogin} setShow={setShowLogin} />
                     </View>
-                :
-                    (!userExists ?
-                    <View style={styles.buttonsView}>
-                        <Pressable style={styles.btn2} onPress={() => setShowLogin("SIGNIN")}>
-                            <Text style={{ color: "#ffffff", fontSize: 30 }}>Sign In</Text>
-                        </Pressable>
-                        <Pressable style={styles.btn} onPress={() => setShowLogin("SIGNUP")}>
-                            <Text style={{ color: "#001729", fontSize: 30 }}>Sign Up</Text>
-                        </Pressable>
-                    </View>
-                    :
-                        <Stack>
-                            <Stack.Screen name='(tabs)' />
-                            <Stack.Screen name='(emptabs)' />
-                        </Stack>
-                    )
-                }
-                <SignIn show={showLogin} setShow={setShowLogin} />
-                <SignUp show={showLogin} setShow={setShowLogin} />
-            </View>
-        </TouchableWithoutFeedback>
+                </TouchableWithoutFeedback>
+            </UserProvider>
+        </AuthProvider>
     )
 }
 

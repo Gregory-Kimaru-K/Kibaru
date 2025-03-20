@@ -1,10 +1,18 @@
 import { View, Text, Animated, Dimensions, Keyboard, Pressable, TextInput, StyleSheet, ScrollView, FlatList } from 'react-native'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { Ionicons } from '@expo/vector-icons';
 import { styles } from '@/constants/signup/styles';
 import { FocusedAnimation, BlurAnimation } from '@/constants/signup/animations';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import 'react-native-get-random-values';
+import { Vibration } from 'react-native';
+import AuthContext from '@/contexts/AuthContext';
+import UserContext from '@/contexts/UserContext';
+
+type EmailValidation = {
+    success: boolean,
+    data: string
+}
 
 const {height} = Dimensions.get("window")
 const skills = [
@@ -21,12 +29,30 @@ const skills = [
 const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string | null) => void}) => {
     const [role, setRole] = useState<null | string>(null)
     const [signupData, setSignupData] = useState<Record<string, string>>({})
-    const [code, setCode] = useState<null | string>(null)
+    const [code, setCode] = useState("")
     const [step, setStep] = useState<number>(1)
-    const [password, setPassword] = useState<null | string>(null)
-    const [confirm, setConfirm] = useState<null | string>(null)
+    const [password, setPassword] = useState("")
+    const [confirm, setConfirm] = useState("")
     const [passwordVisibility, setpasswordVisibility] = useState(true)
     const [confirmPasswordVisibility, setConfirmPasswordVisibility] = useState(true)
+    const [showErrors1, setShowErrors1] = useState(false)
+    const [showErrors2, setShowErrors2] = useState(false)
+    const [showErrors3, setShowErrors3] = useState(false)
+    const [passwordConfirm, setPasswordConfirm] = useState(true)
+
+    const authContext = useContext(AuthContext)
+    const userContext = useContext(UserContext)
+
+    if (!userContext) {
+        throw new Error("UserContext must be used within a UserProvider");
+    }
+
+    if(!authContext) {
+        throw new Error("AuthContext must be used within a AuthProvider");
+    }
+
+    const { emailValidation } = userContext;
+    const { confirmCode } = authContext
 
 
     useEffect(() => {
@@ -38,11 +64,13 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
         labelFontSize: new Animated.Value(14),
         labelPositionLeft: new Animated.Value(8)
     })
+    const createSubmitButtons = () => ({
+        submitButton: new Animated.Value(0)
+    })
 
     const loginFormPostion = useRef(new Animated.Value(height)).current;
     const logoHeight = useRef(new Animated.Value(height * 0.72)).current;
     const backButtonOpacity = useRef(new Animated.Value(0)).current;
-    const submitButton = useRef(new Animated.Value(0)).current;
     const freelanceBg = useRef(new Animated.Value(0)).current;
     const employerBg = useRef(new Animated.Value(0)).current;
     const [emailAnimations, setEmailAnimations] = useState(createAnimatedValues());
@@ -52,6 +80,11 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
     const [codeAnimations, setcodeAnimations] = useState(createAnimatedValues());
     const [passwordAnimations, setPasswordAnimations] = useState(createAnimatedValues());
     const [cpasswordAnimations, setCpasswordAnimations] = useState(createAnimatedValues());
+
+    const [submitButton1,setSubmitButton1] = useState(createSubmitButtons());
+    const [submitButton2,setSubmitButton2] = useState(createSubmitButtons());
+    const [submitButton3,setSubmitButton3] = useState(createSubmitButtons());
+    const [submitButton4,setSubmitButton4] = useState(createSubmitButtons());
 
     const closeKeyboard = () => {
         Keyboard.dismiss()
@@ -99,14 +132,14 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
         setShow("SIGNIN")
     }
 
-    const ButtonAnimation = () => {
+    const ButtonAnimation = (name: {submitButton: Animated.Value}) => {
         Animated.sequence([
-            Animated.timing(submitButton, {
+            Animated.timing(name.submitButton, {
             toValue: 1,
             duration: 10,
             useNativeDriver: false
             }),
-            Animated.timing(submitButton, {
+            Animated.timing(name.submitButton, {
             toValue: 0,
             duration: 300,
             useNativeDriver: false
@@ -118,7 +151,20 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
         openLoginForm()
     }
             
-    const submitedButtonColors = submitButton.interpolate({
+    const submitedButtonColors1 = submitButton1.submitButton.interpolate({
+        inputRange: [0,1],
+        outputRange: ['#FF4C00', '#9A2E00']
+    })
+
+    const submitedButtonColors2 = submitButton2.submitButton.interpolate({
+        inputRange: [0,1],
+        outputRange: ['#FF4C00', '#9A2E00']
+    })
+    const submitedButtonColors3 = submitButton3.submitButton.interpolate({
+        inputRange: [0,1],
+        outputRange: ['#FF4C00', '#9A2E00']
+    })
+    const submitedButtonColors4 = submitButton4.submitButton.interpolate({
         inputRange: [0,1],
         outputRange: ['#FF4C00', '#9A2E00']
     })
@@ -171,21 +217,58 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
     })
 
 
-    const handleNextStep = (step: number) => {
-        ButtonAnimation()
-        setStep(step)
+    const handleNextStep = async(step: number) => {
+        if (step === 2){
+            ButtonAnimation(submitButton1)
+            if (!signupData.first_name || !signupData.last_name || !signupData.email || !signupData.phone_number || !role){
+                setShowErrors1(true)
+                Vibration.vibrate(100)
+                return;
+            }
+            setShowErrors1(false);
+            (async () => {
+                const validate = await emailValidation({ email: signupData.email });
+        
+                if (validate.success) {
+                    setStep(step);
+                }
+            })();
+        } else if (step === 3){
+            ButtonAnimation(submitButton2)
+            if (code.trim() === ""){
+                setShowErrors2(true)
+                Vibration.vibrate(100)
+                return;
+            }
+            setShowErrors2(false);
+            (async () => {
+                const validate = await confirmCode({email: signupData.email, code});
+        
+                if (validate.success) {
+                    setStep(step);
+                }
+            })();
+        } else if (step === 4){
+            ButtonAnimation(submitButton3)
+            if (password.trim() === "" || confirm.trim() === ""){
+                setShowErrors3(true)
+                Vibration.vibrate(100)
+                return;
+            } else if (password !== confirm) {
+                setPasswordConfirm(false)
+                Vibration.vibrate(100)
+                return;
+            }
+            setPasswordConfirm(true)
+            setShowErrors3(false)
+            setStep(step)
+        }
     }
+
 
     const handleSignupData = (name: string, value: string) => {
         setSignupData((prev) => ({...prev, [name]: value}))
         console.log(signupData)
-    }
-
-    const handlePasswordConfirm = () => {
-        ButtonAnimation()
-        if (password === confirm && (password !== null || password !== "")) {
-            setStep(4)
-        }
     }
 
     return (
@@ -201,34 +284,90 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
                         <Text style={styles.signInFormHeader}>Create Account</Text>
                         <View style={styles.NameInputs}>
                             <View style={styles.NameInput}>
-                                <TextInput style={styles.textInput} onFocus={() => FocusedAnimation(fnameAnimations)} onBlur={() => !signupData.first_name && BlurAnimation(fnameAnimations)} onChangeText={(text) => handleSignupData("first_name", text)} />
+                                <TextInput 
+                                    style={styles.textInput}
+                                    onFocus={() => FocusedAnimation(fnameAnimations)}
+                                    onBlur={() => !signupData.first_name && BlurAnimation(fnameAnimations)}
+                                    onChangeText={(text) => handleSignupData("first_name", text)}
+                                    value={signupData.first_name}
+                                    />
                                 <Animated.Text style={[styles.InputLabel, {left: fnameAnimations.labelPositionLeft, bottom: fnameAnimations.labelPositionBottom, fontSize: fnameAnimations.labelFontSize}]}>
                                     First Name
                                 </Animated.Text>
+                                {showErrors1 && (!signupData.first_name || signupData.first_name.trim() === "")
+                                    && (
+                                        <Text style={{ color: "#FF3636", fontSize: 16, marginLeft: 8 }}>* First Name Required</Text>
+                                    )
+                                }
                             </View>
+
                             <View style={styles.NameInput}>
-                                <TextInput style={styles.textInput} onFocus={() => FocusedAnimation(lnameAnimations)} onBlur={() => !signupData.last_name && BlurAnimation(lnameAnimations)} onChangeText={(text) => handleSignupData("last_name", text)} />
+                                <TextInput
+                                    style={styles.textInput}
+                                    onFocus={() => FocusedAnimation(lnameAnimations)}
+                                    onBlur={() => !signupData.last_name && BlurAnimation(lnameAnimations)}
+                                    onChangeText={(text) => handleSignupData("last_name", text)}
+                                    value={signupData.last_name}
+                                    />
                                 <Animated.Text style={[styles.InputLabel, {left: lnameAnimations.labelPositionLeft, bottom: lnameAnimations.labelPositionBottom, fontSize: lnameAnimations.labelFontSize}]}>
                                     Last Name
                                 </Animated.Text>
+                                {showErrors1 && (!signupData.last_name || signupData.last_name.trim() === "")
+                                    && (
+                                        <Text style={{ color: "#FF3636", fontSize: 16, marginLeft: 8 }}>* Last Name Required</Text>
+                                    )
+                                }
                             </View>
                         </View>
                         <View style={styles.ContInput}>
-                            <TextInput style={styles.textInput} onFocus={() => FocusedAnimation(emailAnimations)} onBlur={() => !signupData.email  && BlurAnimation(emailAnimations)} onChangeText={(text) => handleSignupData("email", text)}keyboardType='email-address' />
+                            <TextInput
+                                style={styles.textInput}
+                                onFocus={() => FocusedAnimation(emailAnimations)}
+                                onBlur={() => !signupData.email  && BlurAnimation(emailAnimations)}
+                                onChangeText={(text) => handleSignupData("email", text)}
+                                keyboardType='email-address'
+                                value={signupData.email}
+                                />
                             <Animated.Text style={[styles.InputLabel, {left: emailAnimations.labelPositionLeft, bottom: emailAnimations.labelPositionBottom, fontSize: emailAnimations.labelFontSize}]}>
                                 Email
                             </Animated.Text>
+                            {showErrors1 && (!signupData.email || signupData.email.trim() === "")
+                                    && (
+                                        <Text style={{ color: "#FF3636", fontSize: 16, marginLeft: 8 }}>* Email Required</Text>
+                                    )
+                                }
                         </View>
                         <View style={styles.ContInput}>
-                            <TextInput style={styles.textInput} onFocus={() => FocusedAnimation(phoneAnimations)} onBlur={() =>  !signupData.phone_number && BlurAnimation(phoneAnimations)} onChangeText={(text) => handleSignupData("phone_number", text)} keyboardType='phone-pad' />
+                            <TextInput
+                                style={styles.textInput}
+                                onFocus={() => FocusedAnimation(phoneAnimations)}
+                                onBlur={() =>  !signupData.phone_number && BlurAnimation(phoneAnimations)}
+                                onChangeText={(text) => handleSignupData("phone_number", text)}
+                                keyboardType='phone-pad'
+                                value={signupData.phone_number}
+                                />
                             <Animated.Text style={[styles.InputLabel, {left: phoneAnimations.labelPositionLeft, bottom: phoneAnimations.labelPositionBottom, fontSize: phoneAnimations.labelFontSize}]}>
                                 Phone Number
                             </Animated.Text>
+                            {showErrors1 && (!signupData.phone_number || signupData.phone_number.trim() === "")
+                                && (
+                                    <Text style={{ color: "#FF3636", fontSize: 16, marginLeft: 8 }}>* Phone Number Required</Text>
+                                )
+                            }
                         </View>
                         <View style={styles.ContRoles}>
-                            <Text style={styles.Roles}>
-                                Role:
-                            </Text>
+                        {showErrors1 && (!role) ?
+                            (
+                                <Text style={{ color: "#FF3636", fontSize: 24, marginVertical: 12, fontWeight: 600 }}>
+                                    Role Required:
+                                </Text>
+                            ) :
+                            (
+                                <Text style={styles.Roles}>
+                                    Role:
+                                </Text>
+                            )
+                            }
                             <View style={styles.BtnRolesCont}>
                                 <Animated.Text style={[styles.BtnRoles, {backgroundColor: freelancerColors, borderColor: freelancerBorderColors, color: freelancerrTextColors}]} onPress={() => animateRoleSelection("FREELANCER")}>
                                     Freelancer
@@ -239,7 +378,7 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
                             </View>
                         </View>
                         <Pressable onPress={() => handleNextStep(2)}>
-                            <Animated.View style={[styles.submitBtn, {backgroundColor: submitedButtonColors}]}>
+                            <Animated.View style={[styles.submitBtn, {backgroundColor: submitedButtonColors1}]}>
                                 <Text style={styles.submitBtnText}>
                                     Next
                                 </Text>
@@ -261,15 +400,27 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
                     </Animated.View>
                     <View style={styles.signInForm}>
                     <Text style={styles.signInFormHeader}>Confirm Email</Text>
-                    <Text style={styles.checkMail}>Check <Text style={styles.Mail}>Email</Text></Text>
+                    <Text style={styles.checkMail}>Check <Text style={styles.Mail}>{signupData.email}</Text></Text>
                     <View style={styles.ContInput}>
-                        <TextInput style={styles.textInput} onFocus={() => FocusedAnimation(codeAnimations)} onBlur={() => (code === null || code === "") && BlurAnimation(codeAnimations)} onChangeText={(text) => setCode(text)} keyboardType='numeric' />
+                        <TextInput
+                            style={styles.textInput}
+                            onFocus={() => FocusedAnimation(codeAnimations)}
+                            onBlur={() => (code.trim() === "") && BlurAnimation(codeAnimations)}
+                            onChangeText={(text) => setCode(text)}
+                            keyboardType='numeric'
+                            value={code}
+                            />
                         <Animated.Text style={[styles.InputLabel, {left: codeAnimations.labelPositionLeft, bottom: codeAnimations.labelPositionBottom, fontSize: codeAnimations.labelFontSize}]}>
                             Enter Code
                         </Animated.Text>
+                        {showErrors2 &&
+                            (
+                                <Text style={{ color: "#FF3636", fontSize: 16, marginLeft: 8 }}>* Code Required</Text>
+                            )
+                        }
                     </View>
                         <Pressable onPress={() => handleNextStep(3)}>
-                            <Animated.View style={[styles.submitBtn, {backgroundColor: submitedButtonColors}]}>
+                            <Animated.View style={[styles.submitBtn, {backgroundColor: submitedButtonColors2}]}>
                                 <Text style={styles.submitBtnText}>
                                     Confirm Code
                                 </Text>
@@ -284,35 +435,59 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
 
             {step === 3 && (
                 <Animated.View style={[styles.signIn, {top: loginFormPostion}]}>
-                    <Animated.View style={{ opacity: backButtonOpacity }}>
-                        <Pressable onPress={() => setStep(2)}>
-                        <Ionicons name="arrow-back" size={30} color="#ffffff" />
-                        </Pressable>
-                    </Animated.View>
                     <View style={styles.signInForm}>
                         <Text style={styles.signInFormHeader}>Create Password</Text>
                         <View style={styles.ContInput}>
-                            <TextInput style={styles.textInput} secureTextEntry={passwordVisibility} onFocus={() => FocusedAnimation(passwordAnimations)} onBlur={() => (password === null || password === "") && BlurAnimation(passwordAnimations)} onChangeText={(text) => setPassword(text)} />
+                            <TextInput
+                                style={styles.textInput}
+                                secureTextEntry={passwordVisibility}
+                                onFocus={() => FocusedAnimation(passwordAnimations)}
+                                onBlur={() => (password === null || password === "") && BlurAnimation(passwordAnimations)}
+                                onChangeText={(text) => setPassword(text)}
+                                value={password}
+                                />
                             <Animated.Text style={[styles.InputLabel, {left: passwordAnimations.labelPositionLeft, bottom: passwordAnimations.labelPositionBottom, fontSize: passwordAnimations.labelFontSize}]}>
                                 Password
                             </Animated.Text>
                             <Pressable style={styles.eye} onPress={() => setpasswordVisibility(!passwordVisibility)}>
-                                {passwordVisibility ? <Ionicons name="eye-off-outline" size={24} color="rgba(255, 255, 255, 0.4)" /> : <Ionicons name="eye-outline" size={24} color="rgba(255, 255, 255, 0.4)" />}
+                                {passwordVisibility ? <Ionicons name="eye-outline" size={24} color="rgba(255, 255, 255, 0.4)" /> : <Ionicons name="eye-off-outline" size={24} color="rgba(255, 255, 255, 0.4)" />}
                             </Pressable>
+                            {(showErrors3 && password.trim() === '') &&
+                                (
+                                    <Text style={{ color: "#FF3636", fontSize: 16, marginLeft: 8 }}>* Password Required</Text>
+                                )
+                            }
                         </View>
                         <View style={styles.ContInput}>
-                            <TextInput style={styles.textInput} secureTextEntry={confirmPasswordVisibility} onFocus={() => FocusedAnimation(cpasswordAnimations)} onBlur={() => (confirm === null || confirm === "") && BlurAnimation(cpasswordAnimations)} onChangeText={(text) => setConfirm(text)} />
+                            <TextInput
+                                style={styles.textInput}
+                                secureTextEntry={confirmPasswordVisibility}
+                                onFocus={() => FocusedAnimation(cpasswordAnimations)}
+                                onBlur={() => (confirm === null || confirm === "") && BlurAnimation(cpasswordAnimations)}
+                                onChangeText={(text) => setConfirm(text)}
+                                value={confirm}
+                                />
                             <Animated.Text style={[styles.InputLabel, {left: cpasswordAnimations.labelPositionLeft, bottom: cpasswordAnimations.labelPositionBottom, fontSize: cpasswordAnimations.labelFontSize}]}>
                                 Confirm Password
                             </Animated.Text>
                             <Pressable style={styles.eye} onPress={() => setConfirmPasswordVisibility(!confirmPasswordVisibility)}>
-                                {confirmPasswordVisibility ? <Ionicons name="eye-off-outline" size={24} color="rgba(255, 255, 255, 0.4)" /> : <Ionicons name="eye-outline" size={24} color="rgba(255, 255, 255, 0.4)" />}
+                                {confirmPasswordVisibility ? <Ionicons name="eye-outline" size={24} color="rgba(255, 255, 255, 0.4)" /> : <Ionicons name="eye-off-outline" size={24} color="rgba(255, 255, 255, 0.4)" />}
                             </Pressable>
+                            {(showErrors3 && confirm.trim() === '') &&
+                                (
+                                    <Text style={{ color: "#FF3636", fontSize: 16, marginLeft: 8 }}>* Password Confirmation Required</Text>
+                                )
+                            }
+                            {!passwordConfirm &&
+                                (
+                                    <Text style={{ color: "#FF3636", fontSize: 16, marginLeft: 8 }}>* Password do not match</Text>
+                                )
+                            }
                         </View>
-                        <Pressable onPress={() => handlePasswordConfirm()}>
-                            <Animated.View style={[styles.submitBtn, {backgroundColor: submitedButtonColors}]}>
+                        <Pressable onPress={() => handleNextStep(4)}>
+                            <Animated.View style={[styles.submitBtn, {backgroundColor: submitedButtonColors3}]}>
                                 <Text style={styles.submitBtnText}>
-                                    Next
+                                    Save
                                 </Text>
                             </Animated.View>
                         </Pressable>
@@ -341,7 +516,7 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
                                 console.log("Details:", details);
                             }}
                             query={{
-                                key: "AIzaSyAgf8Rk4UX_On71_nasBjil_YPEjz95WTo",
+                                key: "API",
                                 language: "en", // Language for results
                                 types: "geocode", // Limits results to cities, change as needed
                                 components: "country:KE",
@@ -397,7 +572,7 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
                             }}
                         />
                         <Pressable style={styles.submitLocation} onPress={() => handleNextStep(5)}>
-                            <Animated.View style={[styles.submitBtn, {backgroundColor: submitedButtonColors}]}>
+                            <Animated.View style={[styles.submitBtn, {backgroundColor: submitedButtonColors4}]}>
                                 <Text style={styles.submitBtnText}>
                                     Save
                                 </Text>

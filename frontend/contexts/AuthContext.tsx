@@ -16,7 +16,7 @@ export default AuthContext;
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const forgotPassword = async(forgData: {email: string}) => {
         try{
-            const response = await fetch(`${backendURL}validate/forgot/`, {
+            const response = await fetch(`${backendURL}/validate/forgot/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -45,16 +45,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
     const confirmCode = async(confirmData: {email: string, code: string}) => {
         try{
-            const response = await fetch(`${backendURL}validate/code/`,{
+            const response = await fetch(`${backendURL}/validate/code/`,{
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify(confirmData)
             })
+
+            if (response.status === 200) {
+                const data = await response.json()
+                console.log(data)
+                return {success: true, data: data.detail}
+            } else {
+                const data = await response.json()
+                console.log(`MIN_ERROR_CONFIRM_CODE: ${JSON.stringify(data)}`)
+                return {success: false, data: data.error}
+            }
         }
         catch (error){
             console.log(`MJR_ERROR_CONFIRM_CODE: ${error}`)
+            return {success: true, data: error instanceof Error ? error.message : "Network error"}
         }
     }
     const logout = () => {}

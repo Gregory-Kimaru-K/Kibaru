@@ -42,7 +42,7 @@ export const styles = StyleSheet.create({
         width: "96%",
         height: "100%",
         alignSelf: "center",
-        fontSize: 24,
+        fontSize: 20,
         color: "#FFFFFF"
     },
 
