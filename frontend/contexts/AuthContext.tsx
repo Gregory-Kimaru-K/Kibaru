@@ -65,7 +65,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
         catch (error){
             console.log(`MJR_ERROR_CONFIRM_CODE: ${error}`)
-            return {success: true, data: error instanceof Error ? error.message : "Network error"}
+            return {success: false, data: error instanceof Error ? error.message : "Network error"}
         }
     }
     const logout = () => {}

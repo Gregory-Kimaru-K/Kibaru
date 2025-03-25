@@ -39,12 +39,12 @@ export const UserProvider: React.FC<{children: ReactNode}> = ({ children }) => {
 
         catch (error){
             console.log(`MJR_ERROR_CONFIRM_CODE: ${error}`)
-            return {success: true, data: error instanceof Error ? error.message : "Network error"}
+            return {success: false, data: error instanceof Error ? error.message : "Network error"}
         }
     }
     const createUser = async(createData: any) => {
         try{
-            const response = await fetch(`${backendURL}user/new/`,{
+            const response = await fetch(`${backendURL}/user/new/`,{
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -54,15 +54,20 @@ export const UserProvider: React.FC<{children: ReactNode}> = ({ children }) => {
 
             if (response.status === 201){
                 const data = await response.json()
+                const convert = JSON.stringify(data)
                 console.log(data)
-                await SecureStore.setItemAsync("AuthTokens", data)
+                await SecureStore.setItemAsync("access", convert)
+                return {succes: true}
             }else {
                 const data = await response.json()
-                console.log(`MIN_CREATE_USER_ERROR: ${data}`)
+                const convert = JSON.stringify(data)
+                console.log(`MIN_CREATE_USER_ERROR: ${convert}`)
+                return {succes: false, data: data.detail}
             }
         }
         catch (error){
             console.log(`MJR_CREATE_USER_ERROR: ${error}`)
+            return {succes: false, data: error instanceof Error ? error.message : "Network error"}
         }
     }
 
@@ -79,13 +84,16 @@ export const UserProvider: React.FC<{children: ReactNode}> = ({ children }) => {
             if (response.status === 200){
                 const data = await response.json()
                 console.log(data)
+                return {succes: true, data: data.detail}
             }else {
                 const data = await response.json()
-                console.log(`MIN_CREATE_USER_ERROR: ${data}`)
+                console.log(`MIN_UPDATE_USER_ERROR: ${data}`)
+                return {succes: false, data: data.detail}
             }
         }
-        catch (error){
-            console.log(`MJR_ERROR_CONFIRM_CODE: ${error}`)
+        catch (error) {
+            console.log(`MJR_ERROR_UPDATE_USER: ${error}`)
+            return {succes: false, data: error instanceof Error ? error.message: "Network error"}
         }
     }
 

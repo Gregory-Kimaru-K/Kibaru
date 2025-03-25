@@ -8,6 +8,7 @@ import 'react-native-get-random-values';
 import { Vibration } from 'react-native';
 import AuthContext from '@/contexts/AuthContext';
 import UserContext from '@/contexts/UserContext';
+import { useRouter } from 'expo-router';
 
 type EmailValidation = {
     success: boolean,
@@ -27,7 +28,7 @@ const skills = [
   ];
 
 const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string | null) => void}) => {
-    const [role, setRole] = useState<null | string>(null)
+    const [rolestate, setrolestate] = useState("")
     const [signupData, setSignupData] = useState<Record<string, string>>({})
     const [code, setCode] = useState("")
     const [step, setStep] = useState<number>(1)
@@ -39,6 +40,7 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
     const [showErrors2, setShowErrors2] = useState(false)
     const [showErrors3, setShowErrors3] = useState(false)
     const [passwordConfirm, setPasswordConfirm] = useState(true)
+    const router = useRouter()
 
     const authContext = useContext(AuthContext)
     const userContext = useContext(UserContext)
@@ -51,7 +53,7 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
         throw new Error("AuthContext must be used within a AuthProvider");
     }
 
-    const { emailValidation } = userContext;
+    const { emailValidation, createUser } = userContext;
     const { confirmCode } = authContext
 
 
@@ -169,16 +171,16 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
         outputRange: ['#FF4C00', '#9A2E00']
     })
 
-    const animateRoleSelection = (selectedRole: string) => {
-        setRole(selectedRole)
+    const animaterolestateSelection = (selectedrolestate: string) => {
+        setrolestate(selectedrolestate)
         Animated.parallel([
             Animated.timing(freelanceBg, {
-                toValue: selectedRole === "FREELANCER" ? 1 : 0,
+                toValue: selectedrolestate === "FREELANCER" ? 1 : 0,
                 duration: 300,
                 useNativeDriver: false
             }),
             Animated.timing(employerBg, {
-                toValue: selectedRole === "EMPLOYER" ? 1 : 0,
+                toValue: selectedrolestate === "EMPLOYER" ? 1 : 0,
                 duration: 300,
                 useNativeDriver: false
             })
@@ -216,11 +218,10 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
         outputRange: ["#ffffff", "#FF550D"]
     })
 
-
     const handleNextStep = async(step: number) => {
         if (step === 2){
             ButtonAnimation(submitButton1)
-            if (!signupData.first_name || !signupData.last_name || !signupData.email || !signupData.phone_number || !role){
+            if (!signupData.first_name || !signupData.last_name || !signupData.email || !signupData.phone_number || !rolestate){
                 setShowErrors1(true)
                 Vibration.vibrate(100)
                 return;
@@ -261,6 +262,10 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
             }
             setPasswordConfirm(true)
             setShowErrors3(false)
+            if (rolestate === "EMPLOYER"){
+                handleUserCreation()
+                return;
+            }
             setStep(step)
         }
     }
@@ -269,6 +274,16 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
     const handleSignupData = (name: string, value: string) => {
         setSignupData((prev) => ({...prev, [name]: value}))
         console.log(signupData)
+    }
+
+    const handleUserCreation = async () => {
+        const updated_data = {...signupData, role: rolestate, password: password}
+        console.log(updated_data)
+        const response = await createUser(updated_data)
+        console.log(response)
+        if (response.success){
+            router.replace("/(tabs)")
+        }
     }
 
     return (
@@ -356,7 +371,7 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
                             }
                         </View>
                         <View style={styles.ContRoles}>
-                        {showErrors1 && (!role) ?
+                        {showErrors1 && (!rolestate) ?
                             (
                                 <Text style={{ color: "#FF3636", fontSize: 24, marginVertical: 12, fontWeight: 600 }}>
                                     Role Required:
@@ -369,10 +384,10 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
                             )
                             }
                             <View style={styles.BtnRolesCont}>
-                                <Animated.Text style={[styles.BtnRoles, {backgroundColor: freelancerColors, borderColor: freelancerBorderColors, color: freelancerrTextColors}]} onPress={() => animateRoleSelection("FREELANCER")}>
+                                <Animated.Text style={[styles.BtnRoles, {backgroundColor: freelancerColors, borderColor: freelancerBorderColors, color: freelancerrTextColors}]} onPress={() => animaterolestateSelection("FREELANCER")}>
                                     Freelancer
                                 </Animated.Text>
-                                <Animated.Text style={[styles.BtnRoles, {backgroundColor: employerColors, borderColor: employerBorderColors, color: employerTextColors}]} onPress={() => animateRoleSelection("EMPLOYER")}>
+                                <Animated.Text style={[styles.BtnRoles, {backgroundColor: employerColors, borderColor: employerBorderColors, color: employerTextColors}]} onPress={() => animaterolestateSelection("EMPLOYER")}>
                                     Employer
                                 </Animated.Text>
                             </View>
@@ -450,7 +465,7 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
                                 Password
                             </Animated.Text>
                             <Pressable style={styles.eye} onPress={() => setpasswordVisibility(!passwordVisibility)}>
-                                {passwordVisibility ? <Ionicons name="eye-outline" size={24} color="rgba(255, 255, 255, 0.4)" /> : <Ionicons name="eye-off-outline" size={24} color="rgba(255, 255, 255, 0.4)" />}
+                                {passwordVisibility ? <Ionicons name="eye-off-outline" size={24} color="rgba(255, 255, 255, 0.4)" /> : <Ionicons name="eye-outline" size={24} color="rgba(255, 255, 255, 0.4)" />}
                             </Pressable>
                             {(showErrors3 && password.trim() === '') &&
                                 (
@@ -471,7 +486,7 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
                                 Confirm Password
                             </Animated.Text>
                             <Pressable style={styles.eye} onPress={() => setConfirmPasswordVisibility(!confirmPasswordVisibility)}>
-                                {confirmPasswordVisibility ? <Ionicons name="eye-outline" size={24} color="rgba(255, 255, 255, 0.4)" /> : <Ionicons name="eye-off-outline" size={24} color="rgba(255, 255, 255, 0.4)" />}
+                                {confirmPasswordVisibility ? <Ionicons name="eye-off-outline" size={24} color="rgba(255, 255, 255, 0.4)" /> : <Ionicons name="eye-outline" size={24} color="rgba(255, 255, 255, 0.4)" />}
                             </Pressable>
                             {(showErrors3 && confirm.trim() === '') &&
                                 (
@@ -516,7 +531,7 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
                                 console.log("Details:", details);
                             }}
                             query={{
-                                key: "API",
+                                key: "AIzaSyAgf8Rk4UX_On71_nasBjil_YPEjz95WTo",
                                 language: "en", // Language for results
                                 types: "geocode", // Limits results to cities, change as needed
                                 components: "country:KE",

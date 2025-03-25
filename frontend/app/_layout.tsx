@@ -52,11 +52,7 @@ const _layout = () => {
                     const parsedTokens = JSON.parse(storedTokens)
                     const user = jwtDecode<JwtPayload>(parsedTokens.access)
 
-                    if (user.role === "FREELANCER"){
-                        router.replace("/(tabs)")
-                    }else {
-                        router.replace("/(emptabs)")
-                    }
+                    router.replace("/(tabs)")
                     setUserExists(true)
                 }
                 else{
