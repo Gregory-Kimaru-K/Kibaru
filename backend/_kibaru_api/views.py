@@ -29,6 +29,14 @@ def create_user(request):
     if serializer.is_valid():
         user = serializer.save()
         refresh = RefreshToken.for_user(user)
+        refresh['first_name'] = user.first_name
+        refresh["last_name"] = user.last_name
+        refresh["phone_number"] = user.phone_number
+        refresh["email"] = user.email
+        refresh["role"] = user.role
+        refresh["latitude"] = str(user.latitude)
+        refresh["longitude"] = str(user.longitude)
+        refresh["skills"] = [skill.name for skill in user.skills.all()]
         return Response({"access": str(refresh.access_token),"refresh": str(refresh)}, status=status.HTTP_201_CREATED)
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
