@@ -56,18 +56,18 @@ export const UserProvider: React.FC<{children: ReactNode}> = ({ children }) => {
                 const data = await response.json()
                 const convert = JSON.stringify(data)
                 console.log(data)
-                await SecureStore.setItemAsync("access", convert)
-                return {succes: true}
+                await SecureStore.setItemAsync("AuthTokens", convert)
+                return {success: true}
             }else {
                 const data = await response.json()
                 const convert = JSON.stringify(data)
                 console.log(`MIN_CREATE_USER_ERROR: ${convert}`)
-                return {succes: false, data: data.detail}
+                return {success: false, data: data.detail}
             }
         }
         catch (error){
             console.log(`MJR_CREATE_USER_ERROR: ${error}`)
-            return {succes: false, data: error instanceof Error ? error.message : "Network error"}
+            return {success: false, data: error instanceof Error ? error.message : "Network error"}
         }
     }
 
@@ -84,16 +84,16 @@ export const UserProvider: React.FC<{children: ReactNode}> = ({ children }) => {
             if (response.status === 200){
                 const data = await response.json()
                 console.log(data)
-                return {succes: true, data: data.detail}
+                return {success: true, data: data.detail}
             }else {
                 const data = await response.json()
                 console.log(`MIN_UPDATE_USER_ERROR: ${data}`)
-                return {succes: false, data: data.detail}
+                return {success: false, data: data.detail}
             }
         }
         catch (error) {
             console.log(`MJR_ERROR_UPDATE_USER: ${error}`)
-            return {succes: false, data: error instanceof Error ? error.message: "Network error"}
+            return {success: false, data: error instanceof Error ? error.message: "Network error"}
         }
     }
 
