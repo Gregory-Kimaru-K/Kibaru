@@ -54,7 +54,7 @@ const _layout = () => {
     }, [loading, isAuthenticated]);
 
   if (loading || isAuthenticated === null) {
-    return (
+    return(
       <View style={styles.container}>
         <StatusBar backgroundColor={"#001729"} />
         <Image style={styles.logo} source={require("../assets/logos/Finallyrmbj.png")} />
@@ -68,7 +68,7 @@ const _layout = () => {
   return (
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name='(tabs)' />
+      <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
     </Stack>
   );
 };

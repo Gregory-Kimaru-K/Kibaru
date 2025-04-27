@@ -9,6 +9,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from geopy.distance import geodesic
 from .models import CustomUser, Skills, Rating, JobListing, JobSteps, JobProposal
 from .serializers import CustomUserSerializer, SkillSerializer, JobListingSerializer, RatingSerializer, JobProposalSerializer
+from .pagination import JobPagination
 
 # Create your views here.
 ##########
@@ -121,7 +122,9 @@ def get_jobs(request):
         )
 
     jobs = sorted(jobs, key=lambda job: job.due_date)
-    serializer = JobListingSerializer(jobs, many=True)
+    paginator = JobPagination()
+    paginated_jobs = paginator.paginate_queryset(jobs, request)
+    serializer = JobListingSerializer(paginated_jobs, many=True)
     return Response({"jobs": serializer.data}, status=status.HTTP_200_OK)
 
 class JobView(APIView):
