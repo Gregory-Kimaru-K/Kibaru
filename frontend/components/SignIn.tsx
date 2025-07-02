@@ -31,7 +31,7 @@ const SignIn = ({show, setShow}: {show: string | null, setShow: (value: string |
                 }),
                 Animated.timing(backButtonOpacity, {
                     toValue: 1,
-                    duration: 200,
+                    duration: 1000,
                     useNativeDriver: true
                 })
             ]).start()
@@ -129,7 +129,7 @@ const SignIn = ({show, setShow}: {show: string | null, setShow: (value: string |
     return (
         <Animated.View style={[styles.signIn, {top: loginFormPostion}]}>
             <Animated.View style={{ opacity: backButtonOpacity }}>
-                <Pressable onPress={closeLoginForm}>
+                <Pressable style={{ marginTop: 20 }} onPress={closeLoginForm}>
                     <Ionicons name="arrow-back" size={30} color="#ffffff" />
                 </Pressable>
             </Animated.View>

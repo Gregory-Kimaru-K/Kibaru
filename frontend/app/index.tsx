@@ -7,6 +7,7 @@ import SignIn from '@/components/SignIn'
 import SignUp from '@/components/Signup'
 import { UserProvider } from '@/contexts/UserContext'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 interface JwtPayload {
     role: string;
@@ -46,7 +47,7 @@ const index = () => {
         <AuthProvider>
             <UserProvider>
                 <TouchableWithoutFeedback style={{ flex: 1 }} onPress={closeKeyboard}>
-                    <View style={styles.container}>
+                    <SafeAreaView style={styles.container}>
                         <StatusBar backgroundColor={"#001729"} />
                         <Animated.Image style={[styles.logo, {height: logoHeight}]} source={require("../assets/logos/Finallyrmbj.png")} />
                         {loading ?
@@ -66,13 +67,12 @@ const index = () => {
                             :
                                 <Stack>
                                     <Stack.Screen name='(tabs)' />
-                                    <Stack.Screen name='(emptabs)' />
                                 </Stack>
                             )
                         }
                         <SignIn show={showLogin} setShow={setShowLogin} />
                         <SignUp show={showLogin} setShow={setShowLogin} />
-                    </View>
+                    </SafeAreaView>
                 </TouchableWithoutFeedback>
             </UserProvider>
         </AuthProvider>

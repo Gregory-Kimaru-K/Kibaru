@@ -13,7 +13,7 @@ export const styles = StyleSheet.create({
 
     signInForm: {
         minHeight: height * 0.85,
-        top: height * 0.15,
+        top: height * 0.2,
         backgroundColor: "#032139",
         borderTopLeftRadius: 56,
         borderTopRightRadius: 56,

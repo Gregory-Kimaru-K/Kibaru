@@ -6,6 +6,7 @@ import Home from "@/components/Home";
 import MyJobs from "@/components/MyJobs";
 import Pending from "@/components/Pending";
 import { useNavigation } from "expo-router";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 const Index = () => {
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -27,29 +28,31 @@ const Index = () => {
   });
 
   return (
-    <View style={styles.container}>
-      {/* Animated Navbar */}
-      <Animated.View style={[styles.navbar, { transform: [{ translateY }] }]}>
-        <Navbar pageNav={pageNav} setPageNav={setPageNav} />
-      </Animated.View>
+    <AuthProvider>
+      <View style={styles.container}>
+        {/* Animated Navbar */}
+        <Animated.View style={[styles.navbar, { transform: [{ translateY }] }]}>
+          <Navbar pageNav={pageNav} setPageNav={setPageNav} />
+        </Animated.View>
 
-      {/* Scrollable Content */}
-      <Animated.ScrollView
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: true }
-        )}
-        scrollEventThrottle={16} // Smooth scrolling
-        style={{ marginTop: 130 }}
-      >
-        {pageNav === "HOME" && <Home />}
-        {pageNav === "MY_JOBS" && <MyJobs />}
-        {pageNav === "PENDING" && <Pending />}
-      </Animated.ScrollView>
-      <Pressable style={styles.add} onPress={handleAddJob}>
-        <Ionicons style={{ fontSize: 40,color: "#FFFFFF" }} name="add-outline" />
-      </Pressable>
-    </View>
+        {/* Scrollable Content */}
+        <Animated.ScrollView
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: true }
+          )}
+          scrollEventThrottle={16} // Smooth scrolling
+          style={{ marginTop: 130 }}
+        >
+          {pageNav === "HOME" && <Home />}
+          {pageNav === "MY_JOBS" && <MyJobs />}
+          {pageNav === "PENDING" && <Pending />}
+        </Animated.ScrollView>
+        <Pressable style={styles.add} onPress={handleAddJob}>
+          <Ionicons style={{ fontSize: 40,color: "#FFFFFF" }} name="add-outline" />
+        </Pressable>
+      </View>
+    </AuthProvider>
   );
 };
 

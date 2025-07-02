@@ -1,14 +1,24 @@
-import { View, Dimensions, StyleSheet, StatusBar, Text } from "react-native";
-import React, { useEffect, useState } from "react";
+import { View, Dimensions, StyleSheet, StatusBar, Text, Pressable } from "react-native";
+import React, { useContext, useEffect, useState } from "react";
 import Svg, { Path } from "react-native-svg";
 import * as Font from 'expo-font';
 import { Ionicons } from "@expo/vector-icons";
+import AuthContext from "@/contexts/AuthContext";
+import { useNavigation } from "expo-router";
 
 const { width } = Dimensions.get("window");
 
 
 const Navbar = (Props: {pageNav: "HOME" | "MY_JOBS" | "PENDING", setPageNav: (value: "HOME" | "MY_JOBS" | "PENDING") => void}) => {
     const [fontLoaded, setFontLoaded] = useState(false)
+    const authcontext = useContext(AuthContext)
+    const navigation = useNavigation();
+
+    if (!authcontext){
+      throw new Error("AuthContext is not available");
+    }
+
+    const { logout } = authcontext;
 
     useEffect(() => {
         async function FontLoad(){
@@ -18,6 +28,10 @@ const Navbar = (Props: {pageNav: "HOME" | "MY_JOBS" | "PENDING", setPageNav: (va
         }
         FontLoad().then(() => setFontLoaded(true)).catch(console.warn)   
     }, [])
+
+    const handleLogout = () => {
+      logout();
+    }
 
   return (
     <View style={styles.container}>
@@ -37,9 +51,9 @@ const Navbar = (Props: {pageNav: "HOME" | "MY_JOBS" | "PENDING", setPageNav: (va
         <Text style={{ fontSize: 54, color: "#ffffff", fontWeight: 600, fontFamily: "AdiosAmigos" }}>
             KIBARU
         </Text>
-        <View style={styles.person}>
+        <Pressable style={styles.person} onPress={() => handleLogout()}>
             <Ionicons style={{ color: "#001729", fontSize: 32 }} name="person-outline" />
-        </View>
+        </Pressable>
       </View>
       <View style={styles.navBar}>
         <Text 

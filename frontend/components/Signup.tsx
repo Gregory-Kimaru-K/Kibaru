@@ -10,10 +10,6 @@ import AuthContext from '@/contexts/AuthContext';
 import UserContext from '@/contexts/UserContext';
 import { useRouter } from 'expo-router';
 
-type EmailValidation = {
-    success: boolean,
-    data: string
-}
 
 const {height} = Dimensions.get("window")
 const skills = [
@@ -91,7 +87,7 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
     const closeKeyboard = () => {
         Keyboard.dismiss()
     }
-    
+
     const openLoginForm = () => {
         Animated.parallel([
             Animated.timing(loginFormPostion, {
@@ -291,7 +287,7 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
             {step === 1 && (
                 <Animated.View style={[styles.signIn, {top: loginFormPostion}]}>
                     <Animated.View style={{ opacity: backButtonOpacity }}>
-                        <Pressable onPress={closeLoginForm}>
+                        <Pressable style={{ marginTop: 20 }} onPress={closeLoginForm}>
                             <Ionicons name="arrow-back" size={30} color="#ffffff" />
                         </Pressable>
                     </Animated.View>
@@ -409,7 +405,7 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
             {step === 2 && (
                 <Animated.View style={[styles.signIn, {top: loginFormPostion}]}>
                     <Animated.View style={{ opacity: backButtonOpacity }}>
-                        <Pressable onPress={() => setStep(1)}>
+                        <Pressable style={{ marginTop: 20 }} onPress={() => setStep(1)}>
                             <Ionicons name="arrow-back" size={30} color="#ffffff" />
                         </Pressable>
                     </Animated.View>
@@ -499,7 +495,7 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
                                 )
                             }
                         </View>
-                        <Pressable onPress={() => handleNextStep(4)}>
+                        <Pressable onPress={() => handleUserCreation()}>
                             <Animated.View style={[styles.submitBtn, {backgroundColor: submitedButtonColors3}]}>
                                 <Text style={styles.submitBtnText}>
                                     Save
@@ -516,7 +512,7 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
             {step === 4 && (
                 <View style={styles.signIn}>
                     <View>
-                        <Pressable onPress={() => setStep(3)}>
+                        <Pressable style={{ marginTop: 20 }} onPress={() => setStep(3)}>
                             <Ionicons name="arrow-back" size={30} color="#ffffff" />
                         </Pressable>
                     </View>

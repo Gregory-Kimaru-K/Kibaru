@@ -1,5 +1,7 @@
 import React, { createContext, ReactNode } from "react";
 import backendURL from "@/constants/constants";
+import * as SecureStore from "expo-secure-store";
+import { jwtDecode } from "jwt-decode";
 
 // Create Context
 interface authContext{
@@ -68,8 +70,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             return {success: false, data: error instanceof Error ? error.message : "Network error"}
         }
     }
-    const logout = () => {}
 
+
+    const logout = async() => {
+        await SecureStore.deleteItemAsync("AuthTokens");
+        return {sucess: true};
+    }
     const context = {
         forgotPassword,
         login,
