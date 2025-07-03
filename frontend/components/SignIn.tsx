@@ -1,10 +1,17 @@
 import { View, Text, Animated, Keyboard, Pressable, Dimensions, StyleSheet, TextInput } from 'react-native'
-import React, { useRef, useState } from 'react'
+import React, { useContext, useRef, useState } from 'react'
 import { Ionicons } from '@expo/vector-icons';
+import AuthContext from '@/contexts/AuthContext';
 
 const {height} = Dimensions.get("window")
 
 const SignIn = ({show, setShow}: {show: string | null, setShow: (value: string | null) => void}) => {
+    const authContext = useContext(AuthContext)
+    if (!authContext) {
+        throw new Error("SignIn must be used within an AuthProvider");
+    }
+    const { login, forgotPassword } = authContext;
+
     const createAnimatedValues = () => ({
         labelPositionBottom: new Animated.Value(14),
         labelFontSize: new Animated.Value(14),
@@ -15,12 +22,16 @@ const SignIn = ({show, setShow}: {show: string | null, setShow: (value: string |
         Keyboard.dismiss()
     }
 
+    // Animated values for the login form
     const loginFormPostion = useRef(new Animated.Value(height)).current;
     const logoHeight = useRef(new Animated.Value(height * 0.72)).current;
     const backButtonOpacity = useRef(new Animated.Value(0)).current;
     const submitButton = useRef(new Animated.Value(0)).current
     const [emailAnimations, setEmailAnimations] = useState(createAnimatedValues());
     const [passwordAnimations, setPasswordAnimations] = useState(createAnimatedValues());
+
+    const [loginData, setLoginData] = useState<{ email?: string; password?: string }>({});
+    const [securePassword, setsecurePassword] = useState(true);
 
      const openLoginForm = () => {
             Animated.parallel([
@@ -86,7 +97,7 @@ const SignIn = ({show, setShow}: {show: string | null, setShow: (value: string |
     const BlurAnimation = (animations: {labelPositionBottom: Animated.Value, labelFontSize: Animated.Value, labelPositionLeft: Animated.Value}) => {
         Animated.parallel([
             Animated.timing(animations.labelPositionBottom, {
-                toValue: 20,
+                toValue: 14,
                 duration: 200,
                 useNativeDriver: false
             }),
@@ -96,7 +107,7 @@ const SignIn = ({show, setShow}: {show: string | null, setShow: (value: string |
                 useNativeDriver: false
             }),
             Animated.timing(animations.labelPositionLeft, {
-                toValue: 2,
+                toValue: 8,
                 duration: 200,
                 useNativeDriver: false
             })
@@ -126,6 +137,24 @@ const SignIn = ({show, setShow}: {show: string | null, setShow: (value: string |
         inputRange: [0,1],
         outputRange: ['#FF4C00', '#9A2E00']
     })
+
+    const handleLogin = async () => {
+        if (!loginData.email || !loginData.password){
+            console.log("Please fill in all fields")
+            return;
+        } else {
+            const response = await login({
+                email: loginData.email,
+                password: loginData.password
+            });
+            if (response.success) {
+                console.log("Login successful");
+                closeLoginForm();
+            } else {
+                console.log(`Login failed: ${response.data}`);
+            }
+        }
+    }
     return (
         <Animated.View style={[styles.signIn, {top: loginFormPostion}]}>
             <Animated.View style={{ opacity: backButtonOpacity }}>
@@ -136,21 +165,40 @@ const SignIn = ({show, setShow}: {show: string | null, setShow: (value: string |
             <View style={styles.signInForm}>
                 <Text style={styles.signInFormHeader}>Welcome Back</Text>
                 <View style={styles.ContInput}>
-                    <TextInput style={styles.textInput} onFocus={() => FocusedAnimation(emailAnimations)} onBlur={() => BlurAnimation(emailAnimations)} />
+                    <TextInput
+                        style={styles.textInput}
+                        onFocus={() => FocusedAnimation(emailAnimations)}
+                        onBlur={() => !loginData.email && BlurAnimation(emailAnimations)}
+                        value={loginData.email}
+                        onChangeText={(text) => setLoginData({...loginData, email: text})}
+                        />
                     <Animated.Text style={[styles.InputLabel, {left: emailAnimations.labelPositionLeft, bottom: emailAnimations.labelPositionBottom, fontSize: emailAnimations.labelFontSize}]}>
                         Email or Phone Number
                     </Animated.Text>
                 </View>
                 <View style={styles.ContInput}>
-                    <TextInput style={styles.textInput} onFocus={() => FocusedAnimation(passwordAnimations)} onBlur={()=>BlurAnimation(passwordAnimations)} />
+                    <TextInput
+                        style={styles.textInput}
+                        onFocus={() => FocusedAnimation(passwordAnimations)}
+                        onBlur={() => !loginData.password && BlurAnimation(passwordAnimations)}
+                        value={loginData.password}
+                        onChangeText={(text) => setLoginData({...loginData, password: text})}
+                        secureTextEntry={securePassword}
+                        />
                     <Animated.Text style={[styles.InputLabel, {left: passwordAnimations.labelPositionLeft, bottom: passwordAnimations.labelPositionBottom, fontSize: passwordAnimations.labelFontSize}]}>
                         Password
                     </Animated.Text>
-                    <Pressable style={styles.eye}>
-                        <Ionicons name="eye-off-outline" size={24} color="rgba(255, 255, 255, 0.4)" />
+                    <Pressable
+                        style={styles.eye}
+                        onPress={() => setsecurePassword(!securePassword)}
+                        >
+                        {securePassword ? <Ionicons name="eye-off-outline" size={24} color="rgba(255, 255, 255, 0.4)" /> : <Ionicons name="eye-outline" size={24} color="rgba(255, 255, 255, 0.4)" /> }
                     </Pressable>
                 </View>
-                <Pressable onPress={ButtonAnimation}>
+                <Pressable
+                    onPress={ButtonAnimation}
+                    onPressOut={handleLogin}
+                >
                     <Animated.View style={[styles.submitBtn, {backgroundColor: submitedButtonColors}]}>
                         <Text style={styles.submitBtnText}>
                             Login

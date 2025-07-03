@@ -25,6 +25,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 },
                 body: JSON.stringify(forgData)
             })
+            if (response.status === 200) {
+                const data = await response.json()
+                console.log(data)
+                return {success: true, data: data.detail}
+            } else {
+                const data = await response.json()
+                console.log(`MIN_ERROR_FORGOT: ${JSON.stringify(data)}`)
+                return {success: false, data: data.error}
+            }
         }
         catch (error){
             console.log(`MJR_ERROR_FORGOT: ${error}`)
@@ -33,13 +42,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const login = async(loginData: {email: string, password: string}) => {
         try{
-            const response = await fetch(`${backendURL}tokens/`, {
+            const response = await fetch(`${backendURL}/tokens/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify(loginData)
             })
+
+            if (response.status === 200) {
+                const data = await response.json()
+                const convert = JSON.stringify(data)
+                console.log(data)
+                await SecureStore.setItemAsync("AuthTokens", convert)
+                return {success: true}
+            } else {
+                const data = await response.json()
+                console.log(`MIN_ERROR_LOGIN: ${JSON.stringify(data)}`)
+                return {success: false, data: data.detail}
+            }
         }
         catch (error){
             console.log(`MJR_ERROR_LOGIN: ${error}`)
