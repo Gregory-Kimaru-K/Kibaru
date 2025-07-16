@@ -175,3 +175,14 @@ export const styles = StyleSheet.create({
         width: "100%",
     }
 })
+
+/**
+ * ##########
+ * ###############
+ * FREEANCE OTHER DATA
+ * ###############
+ * ##########
+ */
+
+export const freelanceStyles = StyleSheet.create({
+}) 

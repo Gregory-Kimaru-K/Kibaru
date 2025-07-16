@@ -278,6 +278,9 @@ const SignUp = ({show, setShow}: {show: string | null, setShow: (value: string |
         const response = await createUser(updated_data)
         console.log(response)
         if (response.success){
+            if (rolestate === "FREELANCER"){
+                router.replace("/freelance")
+            }
             router.replace("/(tabs)")
         }
     }

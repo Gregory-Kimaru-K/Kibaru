@@ -57,7 +57,7 @@ const index = () => {
                         :
                             (!userExists ?
                             <View style={styles.buttonsView}>
-                                <Pressable style={styles.btn2} onPress={() => setShowLogin("SIGNIN")}>
+                                <Pressable style={styles.btn2} onPress={() => router.replace("/freelance")}>
                                     <Text style={{ color: "#ffffff", fontSize: 30 }}>Sign In</Text>
                                 </Pressable>
                                 <Pressable style={styles.btn} onPress={() => setShowLogin("SIGNUP")}>
