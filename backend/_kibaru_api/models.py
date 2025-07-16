@@ -55,6 +55,7 @@ class CustomUser(AbstractBaseUser):
     image = models.TextField(null=True, blank=True)
     back_id = models.TextField(null=True, blank=True)
     front_id = models.TextField(null=True, blank=True)
+    certificate = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     objects = CustomUserManager()
@@ -85,7 +86,7 @@ class JobListing(models.Model):
     status = models.TextField(choices=JOB_STATUS, default='PENDING')
     skills = models.ManyToManyField(Skills)
     freelancer = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True)
-    
+
     def accept_proposal(self, proposal):
         self.freelancer = proposal.freelancer
         self.status = "CONFIRMED"

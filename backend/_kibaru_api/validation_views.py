@@ -54,13 +54,29 @@ def validate_code(request):
     else:
         return Response({"error": "Invalid code"}, status=status.HTTP_400_BAD_REQUEST)
 
+def send_verification_code(email):
+    if not email:
+        return Response({"detail": "Email required"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    stored_code = cache.get(email)
+    if not stored_code:
+        stored_code = str(random.randint(100000, 999999))
+        cache.set(email, stored_code, timeout=300)
+
+    subject = "Verification Code"
+    message = f"I hope this message finds you well.\nYour verification code is {stored_code}"
+    from_email = "gregorykariara1@gmail.com"
+
+    try:
+        send_mail(subject, message, from_email, [email])
+    except smtplib.SMTPException:
+        return Response({"detail": "error sending mail"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    return Response({"detail": "Verification code sent successfully"}, status=status.HTTP_200_OK)
+
 @api_view(["POST"])
 def forgot_password(request):
     email_or_phone = request.data.get("email")
     user = get_object_or_404(CustomUser, Q(email=email_or_phone) | Q(phone_number=email_or_phone))
 
-    updated_data = request.data.copy()
-    updated_data["email"] = user.email
-    request._full_data = updated_data
-
-    return validate_email(request)
+    return send_verification_code(email_or_phone)

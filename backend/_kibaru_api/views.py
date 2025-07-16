@@ -54,6 +54,16 @@ class UserView(APIView):
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(["POST"])
+def password_reset(request, pk):
+    user = get_object_or_404(CustomUser, id=pk)
+    new_password = request.data.get("new_password")
+    if not new_password:
+        return Response({"detail": "New Password required"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    user.set_password(new_password)
+    user.save()
+    return Response({"detail": "Password reset successful"}, status=status.HTTP_200_OK)
 
 ##########
 ###############
